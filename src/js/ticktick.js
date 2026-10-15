@@ -438,14 +438,20 @@ export function openImportSheet() {
     [...strategyRow.querySelectorAll('.pick')].forEach(b => b.classList.toggle('on', b.dataset.v === v));
   };
 
-  /* the preview: exactly what will happen, before anything is written */
-  const show = res => {
+  /* the preview: exactly what will happen, before anything is written.
+     `quiet` is for the auto-preview while typing — a half-typed paste is not
+     an error worth shouting about, so it leaves the hint alone. */
+  const show = (res, { quiet = false } = {}) => {
     parsed = res;
     panel.textContent = '';
     panel.hidden = true;
     confirmBtn.disabled = true;
     if (!res || res.error) {
-      status.textContent = tr('import_error');
+      /* empty box: back to the neutral hint. A failed explicit read: say so.
+         A failed auto-parse while typing stays silent but still clears the
+         preview, so the panel never describes text the box no longer holds. */
+      if (!res) status.textContent = tr('import_none');
+      else if (!quiet) status.textContent = tr('import_error');
       return;
     }
     if (res.restore) {
@@ -488,6 +494,7 @@ export function openImportSheet() {
     h('p', { class: 'metric-sub', style: 'margin:0' }, tr('import_hint')),
     h('button', { class: 'pick on', style: 'min-height:50px', onclick: () => fileInput.click() }, '📥 ' + tr('import_pick')),
     fileInput,
+    h('p', { class: 'metric-sub', style: 'margin:0;text-align:center' }, tr('or_drop')),
     h('div', { class: 'detail-label' }, tr('or_paste')),
     area,
     h('button', { class: 'pick', onclick: () => show(parseAny(area.value)) }, tr('parse_text')),
@@ -516,6 +523,36 @@ export function openImportSheet() {
     const f = fileInput.files?.[0]; if (!f) return;
     show(parseAny(await f.text(), f.name));
   });
-  sheet(tr('import_title'), body);
+
+  /* Pasting is the common case (TickTick's own export is a file on a computer
+     but text on a phone), so read it as it arrives instead of asking for a
+     second tap on “Read”. Short text is left alone — that is typing, not an
+     export, and a mid-word error message would be noise. */
+  let typeTimer = null;
+  area.addEventListener('input', () => {
+    clearTimeout(typeTimer);
+    const v = area.value;
+    if (v.trim().length < 40) {
+      show(null, { quiet: true });      /* no export in the box: drop the stale preview */
+      return;
+    }
+    typeTimer = setTimeout(() => show(parseAny(v), { quiet: true }), 350);
+  });
+
+  /* Dropping a file straight onto the sheet: on a desktop this replaces
+     “open the picker → find the file”, and Android browsers allow a drop from
+     Files too. Oversized files are refused rather than parsed into a freeze. */
+  const sh = sheet(tr('import_title'), body);
+  const stop = e => { e.preventDefault(); e.stopPropagation(); };
+  sh.el.addEventListener('dragover', e => { stop(e); sh.el.classList.add('ov-sheet--drop'); });
+  sh.el.addEventListener('dragleave', e => { if (e.target === sh.el) sh.el.classList.remove('ov-sheet--drop'); });
+  sh.el.addEventListener('drop', async e => {
+    stop(e);
+    sh.el.classList.remove('ov-sheet--drop');
+    const f = e.dataTransfer?.files?.[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { status.textContent = tr('import_error'); return; }
+    show(parseAny(await f.text(), f.name));
+  });
   return body;
 }

@@ -11,6 +11,7 @@
   "scripts": {
     "start": "node tools/serve.mjs",
     "check": "node tools/check.mjs",
+    "sync": "node tools/sync.mjs",
     "check:sw": "node tools/build-sw.mjs",
     "build:sw": "node tools/build-sw.mjs --write",
     "check:contrast": "node tools/contrast.mjs --all",

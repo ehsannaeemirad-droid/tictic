@@ -15,6 +15,16 @@
 }
 @keyframes scrim-in { from { opacity: 0; } }
 
+/* a file dragged over the import sheet: the sheet *is* the drop target, so the
+   state lives on it (and on the card inside, which is what the eye reads) */
+.ov-sheet.ov-sheet--drop {
+  background: color-mix(in srgb, var(--accent) 10%, var(--scrim));
+}
+.ov-sheet.ov-sheet--drop .ov-inner {
+  outline: 2px dashed var(--accent);
+  outline-offset: -6px;
+}
+
 .ov-inner {
   width: min(600px, 100%);
   max-height: min(84dvh, 760px);
