@@ -244,8 +244,8 @@ function syncSection() {
   const wrap = h('div', { class: 'stack', style: 'padding:var(--sp-4) 0' });
   const cfg = getSyncCfg();
 
+  wrap.append(h('div', { class: 'detail-label' }, tr('sync_title')));
   wrap.append(h('p', { class: 'metric-sub', style: 'margin:0' }, tr('sync_intro')));
-
   const urlInp = h('input', { type: 'text', value: cfg.endpoint, placeholder: tr('sync_url_ph'), dir: 'ltr', autocomplete: 'off', spellcheck: 'false' });
   const passInp = h('input', { type: 'text', value: cfg.passphrase, placeholder: tr('sync_pass_ph'), dir: 'ltr', autocomplete: 'off', spellcheck: 'false' });
   const save = () => setSyncCfg({ endpoint: urlInp.value.trim(), passphrase: passInp.value.trim() });
