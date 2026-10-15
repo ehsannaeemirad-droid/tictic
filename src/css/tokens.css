@@ -1,0 +1,300 @@
+/* ============================================================
+   TicTic — design tokens  ·  art direction: “Ink & Paper”
+   ------------------------------------------------------------
+   Three independent axes, one attribute each:
+     data-theme="paper|sepia|mint|midnight|neon|terminal|contrast|contrast-dark"
+     data-scheme="light|dark"      (mirrors the theme; set by JS from --theme-scheme)
+     data-accent="auto|clay|blue|green|violet|amber|teal|rose"
+   Rules may only use semantic tokens. Ramps exist to build them.
+   The gate for every colour pair the UI renders: node tools/contrast.mjs
+   ============================================================ */
+
+:root {
+  /* ---- ramps (raw values; never used in rules directly) ---- */
+  --ink-900: #1C1A17; --ink-700: #3A3630; --ink-500: #6E675C; --ink-300: #A8A096;
+  --paper-0: #FFFFFF; --paper-50: #FBF8F3; --paper-100: #F7F4EF; --paper-200: #EFEAE2; --paper-300: #E3DCD1;
+
+  --clay-700: #A32118; --clay-600: #C0392B; --clay-300: #F08573;
+  --amber-700: #8A5A00; --amber-600: #B4761A; --amber-300: #E8B45C;
+  --green-700: #2C7349; --green-600: #2F7A4F; --green-300: #7FD3A2;
+  --violet-700: #5B3FA8; --violet-600: #6D4BC4; --violet-300: #B9A0F5;
+  --blue-700: #1E4F8A; --blue-600: #2563A8; --blue-300: #8FC0F5;
+  --teal-700: #0F5F58; --teal-600: #0F766E; --teal-300: #6FD8CC;
+  --rose-700: #A61E4D; --rose-600: #C2255C; --rose-300: #F587B0;
+  --cyan-300: #7DE3F4; --magenta-300: #FF8AC4; --phosphor-300: #7CF29B;
+
+  /* ---- palette: light scheme (paper) ---- */
+  --bg: var(--paper-100);
+  --surface: var(--paper-0);
+  --surface-2: var(--paper-50);
+  --surface-hover: var(--paper-200);
+  --border: var(--paper-300);
+  --border-strong: #CFC6B8;
+  --scrim: rgba(28, 26, 23, .46);
+
+  --text: var(--ink-900);
+  --text-2: var(--ink-700);
+  --text-muted: var(--ink-500);
+  --text-on-dark: #F7F4EF;
+
+  /* ---- accent default per theme (overridden by data-accent) ---- */
+  --accent: var(--clay-600);
+  --accent-hover: var(--clay-700);
+  --accent-contrast: #FFFFFF;          /* label on a filled accent surface */
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  --accent-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+
+  /* ---- status ---- */
+  --success: var(--green-700);
+  --warning: var(--amber-700);
+  --danger: var(--clay-700);
+  --info: var(--blue-700);
+  --danger-soft: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  --warning-soft: color-mix(in srgb, var(--warning) 14%, var(--surface));
+  --success-soft: color-mix(in srgb, var(--success) 12%, var(--surface));
+
+  /* ---- priority (5 levels, §4) ---- */
+  --priority-frog: var(--violet-700);
+  --priority-high: var(--clay-700);
+  --priority-med: var(--amber-700);
+  --priority-low: var(--blue-700);
+  --priority-none: var(--ink-500);
+  --priority-frog-soft: color-mix(in srgb, var(--priority-frog) 12%, var(--surface));
+  --priority-high-soft: color-mix(in srgb, var(--priority-high) 12%, var(--surface));
+
+  --overdue: var(--ink-500);           /* neutral grey on purpose — never red (§1) */
+  --frog: var(--violet-600);
+  --beam: #E8B45C;
+  --spark: var(--amber-600);
+
+    /* ---- elevation ---- */
+  --shadow-1: 0 1px 2px rgba(28, 26, 23, .05), 0 10px 24px -18px rgba(28, 26, 23, .28);
+  --shadow-2: 0 2px 6px rgba(28, 26, 23, .07), 0 18px 40px -20px rgba(28, 26, 23, .34);
+  --shadow-3: 0 24px 64px -24px rgba(28, 26, 23, .40);
+
+  /* ---- focus ---- */
+  --focus-ring: 3px solid var(--accent-ring);
+  --focus-offset: 2px;
+
+  /* ============================================================
+     Scales — identical in every theme
+     ============================================================ */
+  /* space (4px base) */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+  --sp-12: 48px; --sp-16: 64px;
+
+  /* radius */
+  --r-xs: 6px; --r-sm: 10px; --r-md: 14px; --r-lg: 18px; --r-xl: 24px; --r-pill: 999px;
+
+  /* type */
+  --font-app: 'Vazirmatn', 'Inter', Tahoma, system-ui, sans-serif;
+  --font-latin: 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  --fs-xs: 12px; --fs-sm: 13px; --fs-base: 15px; --fs-md: 16px;
+  --fs-lg: 18px; --fs-xl: 21px; --fs-2xl: 26px; --fs-3xl: 34px;
+  --lh-tight: 1.25; --lh-base: 1.6; --lh-loose: 1.75;   /* loose for Persian descenders */
+  --fw-normal: 400; --fw-medium: 500; --fw-semi: 600; --fw-bold: 700; --fw-black: 800;
+  --tracking-caps: .04em;
+
+  /* motion */
+  --dur-instant: 90ms;  --dur-micro: 140ms; --dur-std: 200ms; --dur-emph: 320ms;
+  --ease-enter: cubic-bezier(.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(.22, 1.4, .36, 1);
+
+  /* z scale */
+  --z-beam: 0; --z-content: 1; --z-topbar: 5; --z-nav: 6; --z-fab: 7;
+  --z-drawer: 40; --z-sheet: 50; --z-focus: 55; --z-snack: 60; --z-confetti: 70;
+
+  /* layout */
+  --sidebar-w: 264px; --sidebar-w-collapsed: 68px; --content-max: 760px;
+  --target-min: 44px;                  /* minimum tap target */
+
+  /* theme scheme marker — read by tools/contrast.mjs, not by CSS */
+  --theme-scheme: light;
+
+  /* ============================================================
+     Deprecated aliases — older modules and inline styles still use
+     these names. They point at the semantic tokens above.
+     ============================================================ */
+  --bg-primary: var(--bg);
+  --bg-secondary: var(--surface);
+  --bg-elevated: var(--surface-2);
+  --bg-hover: var(--surface-hover);
+  --text-primary: var(--text);
+  --text-secondary: var(--text-2);
+  --line: var(--border);
+  --radius-sm: var(--r-xs);
+  --radius-md: var(--r-sm);
+  --radius-lg: var(--r-md);
+  --radius-full: var(--r-pill);
+}
+
+/* ============================================================
+   Dark scheme — the “on dark” half of every colour decision.
+   Applied by [data-scheme="dark"] (any dark theme).
+   ============================================================ */
+:root[data-scheme="dark"] {
+  --bg: #0B0B0D;
+  --surface: #131316;
+  --surface-2: #191920;
+  --surface-hover: #22222A;
+  --border: #2C2C36;
+  --border-strong: #3D3D4A;
+  --scrim: rgba(0, 0, 0, .62);
+
+  --text: #F2EFEA;
+  --text-2: #C9C5BC;
+  --text-muted: #9A948A;
+  --text-on-dark: #F2EFEA;
+
+  --accent: var(--clay-300);
+  --accent-hover: #F5A091;
+  --accent-contrast: #3A0F08;
+
+  --success: var(--green-300);
+  --warning: var(--amber-300);
+  --danger: #F08A80;
+  --info: var(--blue-300);
+
+  --priority-frog: var(--violet-300);
+  --priority-high: #F08A80;
+  --priority-med: var(--amber-300);
+  --priority-low: var(--blue-300);
+  --priority-none: var(--ink-300);
+
+  --overdue: var(--ink-300);
+  --frog: var(--violet-300);
+  --beam: var(--amber-300);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 24px -18px rgba(0, 0, 0, .7);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, .55), 0 18px 40px -20px rgba(0, 0, 0, .8);
+  --shadow-3: 0 24px 64px -24px rgba(0, 0, 0, .85);
+}
+
+/* ============================================================
+   Themes — palette only. Each declares its scheme so the dark
+   half above can apply, and may set its own default accent.
+   ============================================================ */
+
+/* ---- paper (default light) — warm, calm, editorial ---- */
+:root[data-theme="paper"] { --theme-scheme: light; }
+
+/* ---- sepia — reading light: deeper paper, brown ink ---- */
+:root[data-theme="sepia"] {
+  --theme-scheme: light;
+  --bg: #F2E7D5; --surface: #FBF3E6; --surface-2: #F7EEDD; --surface-hover: #EADCC5;
+  --border: #DCCBB0; --border-strong: #C9B394;
+  --text: #2E2418; --text-2: #4B3D2B; --text-muted: #6B5A42;
+  --accent: #9A4A16; --accent-hover: #7E3B11; --accent-contrast: #FFF6EA;
+}
+
+/* ---- mint — cool pastel light ---- */
+:root[data-theme="mint"] {
+  --theme-scheme: light;
+  --bg: #EDF5F1; --surface: #FFFFFF; --surface-2: #F6FBF8; --surface-hover: #DFEDE7;
+  --border: #CFE2DA; --border-strong: #B4D2C6;
+  --text: #10201B; --text-2: #33473F; --text-muted: #596B63;
+  --accent: #0F766E; --accent-hover: #0B5F58; --accent-contrast: #FFFFFF;
+}
+
+/* ---- midnight — neutral true-dark (default dark) ---- */
+:root[data-theme="midnight"] { --theme-scheme: dark; }
+
+/* ---- neon — dark with chroma and glow ---- */
+:root[data-theme="neon"] {
+  --theme-scheme: dark;
+  --bg: #08060F; --surface: #120E20; --surface-2: #191329; --surface-hover: #241B3B;
+  --border: #33264F; --border-strong: #4B3A70;
+  --text: #F6EEFF; --text-2: #D3C4EE; --text-muted: #A794CB;
+  --accent: var(--magenta-300); --accent-hover: #FFB0D6; --accent-contrast: #3B0A26;
+  --shadow-1: 0 0 0 1px rgba(255, 138, 196, .10), 0 12px 30px -18px rgba(255, 138, 196, .35);
+  --shadow-2: 0 0 0 1px rgba(125, 227, 244, .14), 0 20px 44px -20px rgba(125, 227, 244, .35);
+}
+
+/* ---- terminal — dark monospace with phosphor ---- */
+:root[data-theme="terminal"] {
+  --theme-scheme: dark;
+  --font-app: var(--font-mono);
+  --bg: #05070A; --surface: #0A0E12; --surface-2: #0F141A; --surface-hover: #16202A;
+  --border: #1F2C36; --border-strong: #2F4350;
+  --text: #E4F4EA; --text-2: #A9C7B7; --text-muted: #7E9C8C;
+  --accent: var(--phosphor-300); --accent-hover: #A9FFC4; --accent-contrast: #04140A;
+  --radius: 0;
+  --r-xs: 2px; --r-sm: 3px; --r-md: 4px; --r-lg: 6px; --r-xl: 8px;
+}
+
+/* ---- contrast — accessibility light: pure, thick, no shadows ---- */
+:root[data-theme="contrast"] {
+  --theme-scheme: light;
+  --bg: #FFFFFF; --surface: #FFFFFF; --surface-2: #FFFFFF; --surface-hover: #EBEBEB;
+  --border: #000000; --border-strong: #000000;
+  --text: #000000; --text-2: #1A1A1A; --text-muted: #2B2B2B;
+  --accent: #00308F; --accent-hover: #00206B; --accent-contrast: #FFFFFF;
+  --success: #00461F; --warning: #5A3A00; --danger: #8A0F00; --info: #00308F;
+  --shadow-1: none; --shadow-2: none; --shadow-3: none;
+}
+
+/* ---- contrast-dark — accessibility dark ---- */
+:root[data-theme="contrast-dark"] {
+  --theme-scheme: dark;
+  --bg: #000000; --surface: #000000; --surface-2: #0A0A0A; --surface-hover: #1F1F1F;
+  --border: #FFFFFF; --border-strong: #FFFFFF;
+  --text: #FFFFFF; --text-2: #F0F0F0; --text-muted: #D8D8D8;
+  --accent: #9EC5FF; --accent-hover: #C7DCFF; --accent-contrast: #001428;
+  --success: #7DF5A8; --warning: #FFD166; --danger: #FF9C93; --info: #9EC5FF;
+  --priority-frog: #D2BBFF; --priority-high: #FF9C93; --priority-med: #FFD166;
+  --priority-low: #9EC5FF; --priority-none: #D8D8D8;
+  --shadow-1: none; --shadow-2: none; --shadow-3: none;
+}
+
+/* ============================================================
+   Accents — hue only. The dark half re-lights every hue so a
+   filled button and an accent label stay readable on both.
+   ============================================================ */
+:root[data-accent="clay"]   { --accent: var(--clay-600);   --accent-hover: var(--clay-700);   --accent-contrast: #FFFFFF; }
+:root[data-accent="blue"]   { --accent: var(--blue-600);   --accent-hover: var(--blue-700);   --accent-contrast: #FFFFFF; }
+:root[data-accent="green"]  { --accent: var(--green-600);  --accent-hover: var(--green-700);  --accent-contrast: #FFFFFF; }
+:root[data-accent="violet"] { --accent: var(--violet-600); --accent-hover: var(--violet-700); --accent-contrast: #FFFFFF; }
+:root[data-accent="amber"]  { --accent: var(--amber-700);  --accent-hover: #6F4800;           --accent-contrast: #FFF8EC; }
+:root[data-accent="teal"]   { --accent: var(--teal-600);   --accent-hover: var(--teal-700);   --accent-contrast: #FFFFFF; }
+:root[data-accent="rose"]   { --accent: var(--rose-600);   --accent-hover: var(--rose-700);   --accent-contrast: #FFFFFF; }
+
+:root[data-scheme="dark"][data-accent="clay"]   { --accent: var(--clay-300);   --accent-hover: #F5A091; --accent-contrast: #3A0F08; }
+:root[data-scheme="dark"][data-accent="blue"]   { --accent: var(--blue-300);   --accent-hover: #B6D6FA; --accent-contrast: #06213D; }
+:root[data-scheme="dark"][data-accent="green"]  { --accent: var(--green-300);  --accent-hover: #A6E6BE; --accent-contrast: #052413; }
+:root[data-scheme="dark"][data-accent="violet"] { --accent: var(--violet-300); --accent-hover: #D2C2FA; --accent-contrast: #1E1040; }
+:root[data-scheme="dark"][data-accent="amber"]  { --accent: var(--amber-300);  --accent-hover: #F2CC86; --accent-contrast: #2A1A00; }
+:root[data-scheme="dark"][data-accent="teal"]   { --accent: var(--teal-300);   --accent-hover: #9DE9E0; --accent-contrast: #04231F; }
+:root[data-scheme="dark"][data-accent="rose"]   { --accent: var(--rose-300);   --accent-hover: #F9ABC8; --accent-contrast: #3A0A1C; }
+
+/* Themes with a tinted page need a slightly deeper accent than paper
+   white does — same hue, one ramp step down. */
+:root[data-theme="sepia"][data-accent="clay"]   { --accent: var(--clay-700); --accent-hover: #8A1B13; }
+:root[data-theme="sepia"][data-accent="green"]  { --accent: var(--green-700); --accent-hover: #235C39; }
+:root[data-theme="sepia"][data-accent="teal"]   { --accent: var(--teal-700); --accent-hover: #0B4842; }
+:root[data-theme="sepia"][data-accent="amber"]  { --accent: var(--amber-700); }
+:root[data-theme="sepia"][data-accent="blue"]   { --accent: var(--blue-700); }
+:root[data-theme="sepia"][data-accent="violet"] { --accent: var(--violet-700); }
+:root[data-theme="sepia"][data-accent="rose"]   { --accent: var(--rose-700); }
+
+/* "Higher contrast" is orthogonal to the palette: it thickens every
+   boundary and lifts muted text to secondary, without changing hues. */
+:root[data-contrast="more"] {
+  --border: color-mix(in srgb, var(--text) 60%, transparent);
+  --border-strong: var(--text);
+  --text-muted: var(--text-2);
+  --shadow-1: 0 0 0 1px var(--border);
+  --shadow-2: 0 0 0 1px var(--border), 0 8px 24px -18px rgba(0, 0, 0, .5);
+  --shadow-3: 0 0 0 1px var(--border), 0 20px 48px -24px rgba(0, 0, 0, .6);
+  --accent-soft: color-mix(in srgb, var(--accent) 20%, var(--surface));
+}
+
+/* ============================================================
+   Motion preferences — OS level and the in-app switch
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-instant: 1ms; --dur-micro: 1ms; --dur-std: 1ms; --dur-emph: 1ms; }
+}
+:root[data-motion="off"] { --dur-instant: 1ms; --dur-micro: 1ms; --dur-std: 1ms; --dur-emph: 1ms; }

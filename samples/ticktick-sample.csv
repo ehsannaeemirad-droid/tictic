@@ -1,0 +1,17 @@
+"Date: 2026-10-13+0000"
+"Version: 7.1"
+"Status:
+0 Normal
+1 Completed
+2 Archived"
+Folder Name,List Name,Title,Kind,Tags,Content,Is check list,Start Date,Due Date,Reminder,Repeat,Priority,Status,Created Time,Completed Time,Order,Timezone,Is All Day,Is Floating,Column Name,Column Order,View Mode,taskId,parentId
+,کار,پروژه بازطراحی سایت,TEXT,"کار,مهم",سه فاز: تحقیق، طراحی، اجرا,N,,2026-11-01T00:00:00+0330,,,5,0,2026-10-13T16:10:11+0330,,1791895211079,Asia/Tehran,Y,N,,,list,sm-1,
+,کار,جمع‌آوری نمونه‌ها,CHECKLIST,,"- [x] سبک‌شناسی
+- [ ] پالت رنگ
+شامل کاما, گیومه "" و
+خط دوم یادداشت",Y,,2026-11-03T00:00:00+0330,,,3,0,2026-10-13T16:10:11+0330,,2,Asia/Tehran,Y,N,,,list,sm-2,sm-1
+,کار,تماس با مشتری، درباره‌ی «دامنه»,TEXT,,,N,2026-10-14T07:45:00+0330,2026-10-14T08:00:00+0330,TRIGGER:PT0S,,5,0,2026-10-13T16:10:11+0330,,1791895211080,Asia/Tehran,N,N,,,list,sm-3,
+,خانه,مدیتیشن 🧘,TEXT,,,N,,2026-10-14T06:15:00+0330,,RRULE:FREQ=DAILY;INTERVAL=1,1,0,2026-10-13T16:10:11+0330,,1791895211080,Asia/Tehran,N,N,,,list,sm-4,
+,خانه,خرید نان و شیر,TEXT,home,,N,,2026-10-13T00:00:00+0330,,,0,0,2026-10-13T16:10:11+0330,,1791895211080,Asia/Tehran,Y,N,,,list,sm-5,
+,کار,ارسال گزارش هفتگی,TEXT,,,N,,2026-10-10T00:00:00+0330,,,3,1,2026-10-08T09:00:00+0330,2026-10-13T16:10:11+0330,1791895211080,Asia/Tehran,Y,N,,,list,sm-6,
+,اینباکس,ایده‌های قدیمی,TEXT,,آرشیو شده — نگه داشته شده که فراموش نشود,N,,,,,0,2,2026-10-13T16:10:11+0330,,1791895211080,Asia/Tehran,N,N,,,list,sm-7,

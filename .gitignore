@@ -1,0 +1,20 @@
+# agent scratch space (audit scripts, reference packages, logs)
+.freebuff/
+
+# dependency folders — this repo has none by design, but never commit one
+node_modules/
+
+# python cache (tools/make-icons.py)
+__pycache__/
+*.pyc
+
+# logs and OS noise
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# editor state
+.idea/
+.vscode/
+*.swp

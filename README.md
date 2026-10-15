@@ -1,0 +1,131 @@
+# TicTic — ADHD planner
+
+A calm, offline-first daily planner for ADHD brains: TickTick-style lists,
+**frog priorities** (one "eat the frog" task per day), focus timer, habits,
+weekly timetable and a full TickTick import/export bridge. Persian (RTL,
+default) and English. Everything stays on your device.
+
+No framework, no build step, no server, no runtime third-party request.
+Clone, serve the folder, open `index.html`.
+
+---
+
+## Features
+
+- **Today view** with horizons (Today · Tomorrow · This week · Next 7 · Inbox),
+  an "الان / Now" list, frog banner, energy modes (low / normal / high / bad day)
+  that change what the app suggests — not what it allows.
+- **Plan** — Week, Month, Sprint, Agenda and an Eisenhower matrix with
+  drag *and* keyboard moves.
+- **Focus timer** with voice cues, drift detection, pause/+5, resume cue and a
+  post-run calibration question.
+- **Habits, countdowns, projects, flows** (multi-step routines chained through
+  focus sessions), a weekly **timetable** with morning/evening shifts.
+- **Quick add** with a bilingual natural-language parser: `فردا ۸ صبح مطالعه #درس !فوری`
+- **Relief tools**: brain dump, box breathing, blocker helper, 30-second check-in.
+- **Search**, saved filters, `⌘/Ctrl+K` command palette, global shortcuts.
+- **8 themes × 8 accents**, light/dark/system, high-contrast themes, reduce-motion
+  toggle, `prefers-color-scheme` honoured on first load.
+- **Installable PWA** — precached app shell, "new version — reload" prompt,
+  works fully offline, safe-area aware.
+- **Data**: IndexedDB primary with a localStorage mirror, one-tap JSON backup,
+  TickTick CSV/JSON in and out, type-to-confirm reset that offers a backup first.
+
+## Run it
+
+```bash
+# any static file server works; SW needs http(s) or localhost
+python3 -m http.server 8123
+# → http://127.0.0.1:8123/index.html
+```
+
+Install from the browser's "Install app" / "Add to Home Screen".
+
+## Themes
+
+Settings → Appearance. Paper, Sepia, Mint · Midnight, Neon, Terminal ·
+High contrast (light/dark). Plus a System / Light / Dark switch and 8 accent
+hues. Every combination is contrast-checked (WCAG 2.2 AA) by `tools/contrast.mjs`:
+**1 584 pairs, 0 failing**.
+
+## TickTick bridge
+
+Settings → Import / Export. Everything is file-based — no account, no OAuth.
+
+### Export
+
+| Format | Contents |
+|---|---|
+| TickTick CSV | Import straight into TickTick (Settings → Backup & Restore) |
+| TickTick JSON | Open-API shape: projects + tasks + checklist items |
+| JSON backup | The app's complete state — lossless restore |
+
+### Import — exact field mapping
+
+| TickTick column | TicTic field | Notes |
+|---|---|---|
+| `Folder Name` / `List Name` | folder → ignored; `List Name` → list (created if new) | |
+| `Title` | `title` | |
+| `Content` | `notes` + `subtasks` | `- [ ]` / `- [x]` lines become checklist items when `Is check list = Y`; otherwise kept verbatim as notes |
+| `Tags` | `tags` (comma split) | |
+| `Priority` 0/1/3/5 | none / low / med / high | **TickTick has no frog level** — our frog exports as 5 (High) and returns as High |
+| `Start Date` / `Due Date` | `plannedStart` / `dueDate` | `Is All Day = Y` → stored as a calendar day (no timezone drift); otherwise as an instant in your local wall clock |
+| `Reminder` | `reminder` | count preserved (`TRIGGER:PT0S` placeholders) |
+| `Repeat` | `recurrence` | `RRULE:FREQ=DAILY\|WEEKLY\|MONTHLY\|YEARLY` |
+| `Status` 0/1/2 | todo / done / dropped | |
+| `Created Time` / `Completed Time` | `createdAt` / completion | |
+| `taskId` / `parentId` | preserved | keeps parent/child links; export→import round-trips ids |
+
+Before anything is written you get a **preview**: how many tasks and lists will
+be imported, and exactly why any row would be skipped (empty / completed /
+duplicate). Duplicates are skipped by default — never silently overwritten.
+Re-importing the same file adds nothing.
+
+Samples live in [`samples/`](samples) (`ticktick-sample.csv`,
+`tictic-backup-sample.json`, `plain-text-sample.txt`), regenerated from the
+real exporters by `npm run build:samples`. The round-trip is verified by
+`tools/roundtrip.mjs`: **129/129 assertions**.
+
+## Verification
+
+```bash
+npm run check        # no install needed — runs on stock Node ≥ 20
+```
+
+13 gates: syntax · missing imports · CSS coverage · tokens · i18n key parity ·
+manifest · offline purity · console discipline · service-worker precache drift ·
+contrast (WCAG 2.2 AA) · Jalali calendar vs ICU · TickTick round-trip ·
+horizon grouping (no task is drawn twice in one view).
+
+## Browser support
+
+Modern evergreen browsers (Chrome/Edge 109+, Firefox 100+, Safari 16.4+) —
+CSS custom properties, `color-mix()`, ES modules, `100dvh`, service workers.
+iOS: Add to Home Screen (safe-area insets handled).
+
+## Repo layout
+
+```
+index.html          app shell + skeleton first paint
+manifest.json       PWA manifest (id, icons incl. maskable, shortcuts)
+sw.js               precache list GENERATED by tools/build-sw.mjs
+src/css/            tokens → base → components → shell → views
+src/js/             ES modules, no bundler; theme-boot.js runs pre-paint
+src/js/horizons.js  horizon math, kept DOM-free so a gate can prove it
+public/fonts|icons  self-hosted subsets + generated icon set
+tools/              check.mjs and the gates it runs
+samples/            importable TickTick samples
+```
+
+## Roadmap
+
+Deferred items are tracked with reasons in [DEFERRED.md](DEFERRED.md)
+(cloud sync, push reminders, TickTick OAuth, attachments, Markdown notes).
+Design decisions and the launch review: [DESIGN_PLAN.md](DESIGN_PLAN.md),
+[DESIGN_AUDIT.md](DESIGN_AUDIT.md), [LAUNCH_REVIEW.md](LAUNCH_REVIEW.md).
+
+## Licence
+
+MIT — see [LICENSE](LICENSE). Bundled assets keep their own licences,
+listed in [CREDITS.md](CREDITS.md) (Vazirmatn + Inter OFL 1.1,
+Lucide icon geometry ISC, jalaali-js algorithm MIT).

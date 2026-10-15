@@ -1,0 +1,28 @@
+{
+  "id": "tictic-adhd-planner",
+  "name": "TicTic — ADHD planner",
+  "short_name": "TicTic",
+  "description": "A calm daily planner for ADHD brains: horizons, frog priorities, focus timer, habits and a weekly timetable. Works offline, keeps everything on your device.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "theme_color": "#F7F4EF",
+  "background_color": "#F7F4EF",
+  "lang": "fa",
+  "dir": "rtl",
+  "categories": ["productivity", "lifestyle", "utilities"],
+  "icons": [
+    { "src": "public/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "public/icons/favicon-48.png", "sizes": "48x48", "type": "image/png" },
+    { "src": "public/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "public/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "public/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Add a task", "short_name": "Add", "url": "./index.html?do=quickadd", "icons": [{ "src": "public/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Brain dump", "short_name": "Dump", "url": "./index.html?do=dump", "icons": [{ "src": "public/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Plan the week", "short_name": "Plan", "url": "./index.html?do=plan", "icons": [{ "src": "public/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
