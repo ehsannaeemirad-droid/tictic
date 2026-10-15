@@ -18,6 +18,7 @@
      calendar      Jalali conversion vs ICU, day by day
      roundtrip     TickTick export → import reproduces the data
      horizons      no row lands in two groups of one view (duplicate rows)
+     sync-merge    device sync merges without losing or resurrecting a task
 
    Exit 0 only when every gate passes.
    ============================================================ */
@@ -140,6 +141,7 @@ run('contrast', process.execPath, ['tools/contrast.mjs', '--all']);
 run('calendar', process.execPath, ['tools/calendar.mjs']);
 run('roundtrip', process.execPath, ['tools/roundtrip.mjs']);
 run('horizons', process.execPath, ['tools/check-horizons.mjs']);
+run('sync-merge', process.execPath, ['tools/check-sync.mjs']);
 
 /* ---- report ------------------------------------------------------------ */
 const pad = Math.max(...results.map((r) => r.name.length));

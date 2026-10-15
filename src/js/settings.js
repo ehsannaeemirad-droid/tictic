@@ -12,6 +12,7 @@ import { sheet, snackbar } from './components.js';
 import { openImportSheet, openExportSheet, toBackup, downloadFile } from './ticktick.js';
 import { currentShift } from './timetable.js';
 import { THEMES, ACCENTS, themeName, applyAppearance, resolveThemeId } from './theme.js';
+import { getSyncCfg, setSyncCfg, isConfigured, syncNow, forgetRemote, startAutoSync } from './sync.js';
 import { seedIfNeeded } from './seed.js';
 
 export function openSettings() {
@@ -169,6 +170,9 @@ export function openSettings() {
     h('button', { class: 'pick on', style: 'min-height:48px;flex:1', onclick: () => openExportSheet() }, '📤 ' + tr('export_title')),
   ));
 
+  /* ---------------- Sync (desktop ↔ phone) ---------------- */
+  body.append(syncSection());
+
   /* ---------------- Danger zone ---------------- */
   body.append(h('div', { class: 'detail-label' }, tr('danger_zone')));
   body.append(h('div', { class: 'danger-zone' },
@@ -231,4 +235,84 @@ function resetAppearance() {
   snackbar(tr('reset_appearance_done'));
   document.querySelectorAll('.ov-sheet').forEach(s => s.remove());
   openSettings();
+}
+
+/* ---- device sync: point this device at your sync server, pick a
+   passphrase, tap sync. Config lives outside the app state, so the
+   passphrase can never be exported or synced away. ---- */
+function syncSection() {
+  const wrap = h('div', { class: 'stack', style: 'padding:var(--sp-4) 0' });
+  const cfg = getSyncCfg();
+
+  wrap.append(h('p', { class: 'metric-sub', style: 'margin:0' }, tr('sync_intro')));
+
+  const urlInp = h('input', { type: 'text', value: cfg.endpoint, placeholder: tr('sync_url_ph'), dir: 'ltr', autocomplete: 'off', spellcheck: 'false' });
+  const passInp = h('input', { type: 'text', value: cfg.passphrase, placeholder: tr('sync_pass_ph'), dir: 'ltr', autocomplete: 'off', spellcheck: 'false' });
+  const save = () => setSyncCfg({ endpoint: urlInp.value.trim(), passphrase: passInp.value.trim() });
+  urlInp.addEventListener('change', save);
+  passInp.addEventListener('change', save);
+
+  wrap.append(h('div', { class: 'set-label' }, tr('sync_url')));
+  wrap.append(urlInp);
+  wrap.append(h('div', { class: 'set-label', style: 'margin-top:8px' }, tr('sync_pass')));
+  wrap.append(passInp);
+
+  const status = h('p', { class: 'metric-sub', style: 'margin:0' }, syncStatusText());
+  const doSync = h('button', { class: 'pick pick--solid', style: 'min-height:48px' }, '🔄 ' + tr('sync_now'));
+  doSync.addEventListener('click', async () => {
+    save();
+    if (!isConfigured()) { snackbar(tr('sync_not_configured')); return; }
+    doSync.disabled = true;
+    status.textContent = tr('sync_working');
+    const r = await syncNow();
+    doSync.disabled = false;
+    status.textContent = syncStatusText();
+    if (r.ok) {
+      const s = r.stats || { added: 0, updated: 0, removed: 0 };
+      snackbar(tr('sync_done', { a: s.added, u: s.updated, d: s.removed }));
+    } else {
+      snackbar(syncFailText(r.reason));
+    }
+  });
+  wrap.append(h('div', { class: 'chips-row', style: 'margin-top:8px' }, doSync));
+  wrap.append(status);
+
+  const autoLbl = h('span', {}, tr('sync_auto'));
+  const autoBtn = h('button', {
+    class: 'set-toggle' + (cfg.auto ? ' on' : ''), role: 'switch', 'aria-checked': String(!!cfg.auto),
+    onclick: e => {
+      const on = !e.currentTarget.classList.contains('on');
+      setSyncCfg({ auto: on });
+      e.currentTarget.classList.toggle('on', on);
+      e.currentTarget.setAttribute('aria-checked', String(on));
+      e.currentTarget.querySelector('.sw').textContent = on ? '✓' : '';
+      startAutoSync();            /* starts if just enabled, stops if just disabled */
+    },
+  }, autoLbl, h('span', { class: 'sw' }, cfg.auto ? '✓' : ''));
+  wrap.append(autoBtn);
+
+  const forget = h('button', { class: 'pick pick--danger', style: 'min-height:44px' }, '🗑 ' + tr('sync_forget'));
+  forget.addEventListener('click', async () => {
+    save();
+    const r = await forgetRemote();
+    snackbar(r.ok ? tr('sync_forget_done') : syncFailText(r.reason));
+  });
+  wrap.append(h('div', { class: 'chips-row' }, forget));
+
+  return wrap;
+}
+
+function syncStatusText() {
+  const cfg = getSyncCfg();
+  if (!isConfigured()) return tr('sync_not_configured');
+  if (!cfg.lastSyncAt) return tr('sync_never');
+  return tr('sync_last', { t: new Date(cfg.lastSyncAt).toLocaleTimeString() });
+}
+
+function syncFailText(reason) {
+  if (reason === 'offline') return tr('sync_offline');
+  if (reason === 'bad_key') return tr('sync_bad_key');
+  if (reason === 'not_configured') return tr('sync_not_configured');
+  if (reason === 'insecure_context') return tr('sync_insecure');
+  return tr('sync_fail');
 }

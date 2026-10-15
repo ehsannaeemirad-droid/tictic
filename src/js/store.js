@@ -16,6 +16,7 @@ export const S = {
   /* core */
   tasks: [], flows: [], dumps: [], projects: [], sections: [], tagsBank: [], lists: [],
   checkins: [], postSessions: [], driftCounts: {}, energyModes: {},
+  tombstones: {}, /* { id: deletedAt } so deletions travel across devices */
   sprint: null, fuel: 0, xp: 0,
   /* settings */
   settings: {
@@ -118,7 +119,7 @@ function readIDB() {
 
 export function hydrate(data) {
   if (!data || typeof data !== 'object') return;
-  for (const k of ['tasks','flows','dumps','projects','sections','tagsBank','lists','checkins','postSessions','driftCounts','energyModes','sprint','fuel','xp','settings','lighthouse','collapseState','ui','timetable','habits','countdowns','savedFilters','__seeded']) {
+  for (const k of ['tasks','flows','dumps','projects','sections','tagsBank','lists','checkins','postSessions','driftCounts','energyModes','sprint','fuel','xp','settings','lighthouse','collapseState','ui','timetable','habits','countdowns','savedFilters','__seeded','tombstones']) {
     if (data[k] !== undefined) S[k] = data[k];
   }
   /* settings gain keys over time — merge over the defaults instead of
@@ -153,6 +154,16 @@ export function upsertTask(patch) {
 export function childrenOf(id) {
   return S.tasks.filter(t => t.parentId === id).sort((a, b) => a.order - b.order);
 }
+/* Delete a task AND remember it, so the deletion propagates to a synced
+   device instead of the task resurrecting on the next pull. */
+export function deleteTask(id) {
+  const i = S.tasks.findIndex(t => t.id === id);
+  if (i < 0) return false;
+  S.tasks.splice(i, 1);
+  S.tombstones = S.tombstones || {};
+  S.tombstones[id] = Date.now();
+  return true;
+}
 /* descendants guard for DnD (§33 in draft) */
 export function isDescendant(candidateId, ancestorId) {
   let cur = byId(candidateId);
@@ -178,7 +189,7 @@ export function clearAllData() {
   S.sections = []; S.lists = [{ id: 'inbox', name: 'اینباکس', system: true }];
   S.__seeded = true;
   S.sprint = null; S.xp = 0; S.fuel = 0; S.driftCounts = {}; S.postSessions = [];
-  S.energyModes = {}; S.timetable = null;
+  S.energyModes = {}; S.timetable = null; S.tombstones = {};
   commit();
   try { localStorage.removeItem(LS_KEY); } catch (e) {}
   if ('indexedDB' in window) {

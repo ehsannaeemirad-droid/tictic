@@ -3,7 +3,7 @@
    Frog banner · energy mode · overdue (neutral) · key tasks ·
    regular · done today · Noise Harbor card · Now list
    ============================================================ */
-import { S, commit, persist, byId, makeTask } from '../store.js';
+import { S, commit, persist, byId, makeTask, deleteTask } from '../store.js';
 import { tr, N, fmtDate, dayName, parseISO, dayKey } from '../i18n.js';
 import { groupOf, todayKey } from '../horizons.js';
 import { h, sv, icons, announce, levelProgress } from '../ui.js';
@@ -141,7 +141,7 @@ function addMicroTask(title) {
   S.tasks.push(task);
   persist(); commit(); rerenderToday();
   snackbar(tr('micro_added', { x: title }), () => {
-    S.tasks = S.tasks.filter(x => x.id !== task.id);
+    deleteTask(task.id);
     persist(); commit(); rerenderToday();
   });
 }

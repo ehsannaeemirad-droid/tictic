@@ -3,7 +3,7 @@
    Progressive disclosure: essentials first. Distinct labels for
    due / planned start / estimate / actual / reminders.
    ============================================================ */
-import { S, commit, byId } from './store.js';
+import { S, commit, byId, deleteTask } from './store.js';
 import { tr, N, parseISO, fmtDate, isoTime, iso, dayKey, hasTimeOfDay } from './i18n.js';
 import { h, sv, icons, announce } from './ui.js';
 import { sheet, snackbar, tickChip, PRIORITY, DOPAMINE, PRESSURE } from './components.js';
@@ -225,8 +225,7 @@ function actionsSection(task, closeSheet) {
   if (task.status === 'done') acts.append(btn(tr('undo') + ' ' + tr('done'), () => { uncompleteTask(task.id); closeSheet(); }));
   else acts.append(btn('✓ ' + tr('complete'), () => { completeTask(task.id); announce(tr('done') + '.'); closeSheet(); }));
   acts.append(btn('🗑 ' + tr('delete'), () => {
-    const i = S.tasks.findIndex(t => t.id === task.id);
-    if (i >= 0) { S.tasks.splice(i, 1); commit(tt => !!tt.tasks); closeSheet(); }
+    if (deleteTask(task.id)) { commit(tt => !!tt.tasks); closeSheet(); }
   }));
   return acts;
 }
