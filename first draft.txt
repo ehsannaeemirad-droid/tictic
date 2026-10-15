@@ -1,0 +1,829 @@
+1. Top-level Navigation (bottom nav)
+Today — day view with frog banner, energy mode, key tasks, done section
+
+Plan — week / month / sprint planner
+
+Projects — shiny ideas with artifact + hyperfocus blocks
+
+Flows — morning routines and multi-step sequences
+
+Report — day/week/sprint/month analytics + symptom averages
+
+2. Today View
+Header with title, date label, level + XP bar, task counts
+
+Three-dot drawer button (top-left, only on Today when horizon=today)
+
+Date navigation prev/next (when horizon=today)
+
+🐸 Frog banner — today's purple priority with "Eat it!" button
+
+Check-in banner — 30-second symptom check-in prompt (once per day)
+
+Energy mode selector — Normal / Low / High / Very bad day
+
+Low → shows helpful action cards
+
+High → nudge to add tasks
+
+Bad → survival mode (filters + auto-adds helpful tasks)
+
+List filter chips — all / inbox / custom lists
+
+Overdue section — collapsible, per-item move/edit/delete
+
+Key tasks section — starred tasks
+
+Regular tasks — nested up to 4 levels, time-sorted
+
+Dropped tasks section — restore with one tap
+
+Done today section — collapsible, "sunk today" label
+
+Noise Harbor card — bottom shortcut showing parked count
+
+Survival mode hidden count — how many tasks were filtered out
+
+3. Task Card
+Tick circle (completes with confetti + chime + snackbar undo)
+
+Title button → opens Quick Set sheet
+
+Dopamine icon (love/soso/dislike) + pressure icon (out/self)
+
+Meta line: time, estimate, actual, drift count, delay, reminders, subtask counts
+
+Content preview (truncated)
+
+Priority flag — colored by level
+
+Star — key task toggle
+
+Play — start focus timer
+
+DECIDE chip — for decision-type tasks (dashed purple border)
+
+🐸 chip — for frog priority (pulsing purple glow)
+
+Delay badge — ⏳ with date
+
+Bell badge — 🔔 with pending reminder count
+
+Noise tag — parked tasks fade but stay in Harbor
+
+4. Quick Set Sheet (tap task or right-click)
+Title preview
+
+Estimate chips — 5m / 10m / 15m / 25m / 45m / 60m + custom number
+
+Priority — 🐸 / 🔴 / 🟠 / 🔵 / ⚪
+
+Kind — Action / Decision / Project
+
+Delay-until date with auto reminder badges
+
+Start / Edit / Noise / Delete actions
+
+Close
+
+5. Full Task Edit Sheet
+Title *
+
+**Dopamine type *** (love / so-so / dislike)
+
+**Pressure type *** (outside / self)
+
+Kind (action / decision / project)
+
+When (today / tomorrow / custom date)
+
+Start time
+
+Estimate (chips + number)
+
+Category (home / work / health / learn / other)
+
+List
+
+Section
+
+Content / notes (multiline)
+
+Tags (comma-separated)
+
+Reminder (none / at start / 10/30/60 min before)
+
+Repeat (daily / weekly / monthly)
+
+Priority — 🐸 🔴 🟠 🔵 ⚪
+
+Delay until date
+
+Save / Cancel / Delete
+
+6. Task Detail Sheet
+Title, tags (dopamine, pressure, priority, list, kind, custom tags)
+
+Date / time / estimate / done state / delay
+
+Quick set chips (estimate + priority + kind + delay)
+
+Mini steps — checklist with add/check/remove
+
+Actions:
+
+Start focus timer
+
+Decide (if decision)
+
+Mark done / undo
+
+Edit
+
+Due date / start time
+
+Blocker helper
+
+Park as noise
+
+Key toggle
+
+Restore (if dropped)
+
+Move to list
+
+Add subtask
+
+Move out of parent
+
+Delete
+
+7. Focus Timer (Run overlay)
+Full-screen with task tags, title, estimate, content
+
+Mini steps — tap to check
+
+SVG circular progress ring
+
+Countdown (or stopwatch if no estimate)
+
+Voice time cues at 50% / 75% / 5 min / time up
+
+Buttons:
+
+Finish
+
++5 min
+
+Drift — logs how many times you drifted
+
+Stop / back
+
+On finish:
+
+Logs actual minutes
+
+Awards XP
+
+Confetti + chime
+
+Opens post-run calibration question
+
+Chains to next flow step if part of a flow
+
+8. Plan View
+Week mode — 7-day list, Saturday-start (Iranian)
+
+Month mode — 7-column grid
+
+Sprint mode — 14-day sprint with day X of Y and progress bar
+
+Add task to sprint
+
+Move sprint task one day later
+
+9. Projects View
+New project button
+
+Each project card:
+
+Name
+
+Why it pulls you (italic, dopamine hook)
+
+Artifact (required — concrete deliverable)
+
+Deadline pill (turns red under 3 days)
+
+Progress bar — consumed hyperfocus hours
+
+Hyperfocus blocks — date + duration, each with play button
+
+Actions: Add block / Edit / Release
+
+Released projects — collapsible, restore button
+
+10. Project Form
+Name *
+
+Why it pulls
+
+Artifact * (required)
+
+Deadline
+
+Save / Cancel
+
+11. Hyperfocus Block Form
+Date
+
+Duration chips (30 / 45 / 60 / 90 / 120) + custom number
+
+Save / Cancel
+
+12. Decision Resolution Sheet
+Task title
+
+Pros / cons / options textarea
+
+Decide by date
+
+YES — marks done, counts as a win
+
+NO — drops the task
+
+LATER — sets a decision-by date + arms delay reminders
+
+13. Noise Harbor Sheet
+List of parked items (title + content preview)
+
+Un-noise button per item — restores as a real task set to today
+
+Count of parked items
+
+14. Drawer (three-dot menu)
+Horizons: Today / Tomorrow / This week / Next 7 days / Inbox
+
+Sections — filter list + inline create ("Work", "Personal", …)
+
+Tags — filter chips + inline create
+
+Noise Harbor shortcut with count badge
+
+Close
+
+15. Flows View
+List of routines
+
+Each flow: name, step count, total estimated minutes
+
+Start / Edit buttons
+
+New flow button
+
+16. Flow Editor
+Flow name
+
+Steps — each with:
+
+Title input
+
+Estimate minutes
+
+Dopamine toggle (cycles love → soso → dis)
+
+Pressure toggle (out ↔ self)
+
+Up / down / delete
+
+Drag-and-drop reorder
+
+Add new step
+
+Pick existing task as a step
+
+Save / Cancel
+
+17. Report View
+Period: day / week / sprint / month with prev/next nav
+
+Completion card — done / total + minutes
+
+Decisions resolved — X / Y with a note that deciding is executive work
+
+Symptom averages (last 14 days):
+
+Cluster HI (hyperactivity/impulsivity)
+
+Cluster EF (executive function)
+
+Cluster EA (attention regulation)
+
+Worst symptom callout with design advice
+
+Dopamine distribution bar (love / soso / dislike)
+
+Pressure distribution bar (outside / self)
+
+Time hypothesis — % time on love tasks
+
+Calibration — "when you guess 20 min, it usually takes N min"
+
+Completion feedback — under half done vs good rhythm
+
+18. Check-in Sheet
+Time of day (morning / afternoon / evening)
+
+Context (home / work / social / other)
+
+14 symptoms across 3 clusters, each rated 0–4:
+
+EF: mental energy, task initiation, working memory, planning, decision paralysis, perfectionism
+
+EA: routine adherence, sustained attention, distractibility, task re-engagement, time blindness
+
+HI: inhibition, reward sensitivity, irritability
+
+Notes (sleep, meds, food)
+
+Save / Cancel
+
+19. Blocker Sheet
+Six blocker options:
+
+Not in the mood
+
+No executive energy
+
+Bored
+
+Overwhelmed
+
+Social fear
+
+Physically tired
+
+Plus:
+
+Postpone to tomorrow
+
+Won't do this
+
+20. Blocker Suggestions Sheet
+Each blocker produces 3 suggestions:
+
+Two-minute starter
+
+Swap for a spark task
+
+Skip today
+
+Shrink to micro-step
+
+Body double
+
+Recovery mode
+
+Pair with dopamine
+
+Speed run
+
+Breathe 1 minute
+
+Draft a script
+
+Async option
+
+5-minute prep timer
+
+Log rest as done
+
+Postpone to tomorrow
+
+21. Post-Run Calibration Sheet
+"Did that go as expected?"
+
+Yes, on track
+
+No, it drifted
+
+Skip
+
+22. Energy Mode Sheet
+Normal day
+
+Low energy
+
+High energy
+
+Very bad day
+
+Shows current selection
+
+23. Overdue Sheet
+List of all overdue tasks
+
+Move to today / tomorrow / next week
+
+Edit / delete
+
+24. Brain Dump Sheet
+Textarea for any thought
+
+Save list of dumps
+
+Convert dump → task
+
+Delete dump
+
+25. Sprint Definition Sheet
+Name
+
+Goal
+
+Start date
+
+Length chips (7 / 10 / 14 / 21 / 30) + custom
+
+Save / Cancel
+
+26. Import Sheet (TicTic/TickTick)
+File picker (CSV / JSON)
+
+Paste textarea
+
+Parse button
+
+Preview count + skipped duplicates
+
+Toggle "include completed"
+
+Import button
+
+Cancel
+
+27. Task Picker Sheet
+Search input
+
+List of matching tasks
+
+Tap to add (to flow step or sprint)
+
+28. Move to List Sheet
+List of all lists with current one marked
+
+Tap to move
+
+29. List Edit Sheet
+Rename list
+
+Delete list (inbox cannot be deleted)
+
+Save / Cancel
+
+30. Due Date / Start Time Sheet
+Date
+
+Time
+
+Save / Cancel
+
+31. Settings View
+Language (fa / en)
+
+Theme (system / light / dark)
+
+Accent color (red / blue / green / purple / orange / teal)
+
+Calendar (Jalali / Gregorian)
+
+Voice cues on/off
+
+Foghorn on/off
+
+Sound effects on/off
+
+Request notification permission
+
+Lists — chips + add new
+
+Import from TicTic
+
+Energy behavior section:
+
+Low energy helpful cards on/off
+
+High energy nudge on/off
+
+Bad day urgent definition (outside / red / both)
+
+Bad day auto-add helpful tasks on/off
+
+Number of helpful tasks (1–5)
+
+Install app
+
+Clear all data
+
+32. Breathing Exercise
+4-4-4-4 box breathing
+
+Animated expanding/contracting circle
+
+Progress ring
+
+Phase label (Breathe in / Hold / Breathe out / Hold)
+
+Phase dots
+
+Cycle counter
+
+Voice cues and tones per phase
+
+Vibration
+
+Pause / resume / stop
+
+33. Drag & Drop
+Long-press task (380ms) to arm drag
+
+Drop on another task → becomes subtask
+
+Drop target glows with a dashed beam-gold outline
+
+Guards: cannot nest into self, descendant, or depth > 4
+
+Children inherit parent's date
+
+Flow steps drag to reorder
+
+HTML5 drag also supported
+
+34. Context Menu / Right-click
+Right-click any task → opens Quick Set sheet directly
+
+Long-press on mobile does the same after drag-cancel
+
+35. Undo Snackbar
+Appears for 5 seconds after completion
+
+"Completed by accident? ↩ Undo"
+
+Restores task and clears completion
+
+36. Confetti & Cheer
+18 pieces in beam-gold, lighthouse cream, purple, green
+
+Respects prefers-reduced-motion
+
+37. Lighthouse Theme
+Rotating beam — slow conic-gradient sweep behind everything
+
+Foghorn — noon two-tone low horn for untouched frogs
+
+Frog glow — pulsing purple border on frog-priority tasks
+
+Frog banner — today's frog with shine animation
+
+Sunk successfully — done tasks labeled under "Today, sunk"
+
+Sound design — distinct tones for 50%, 75%, 5-min, time-up
+
+38. Priorities (5 levels)
+⚪ White — unimportant
+
+🔵 Blue — nice to do
+
+🟠 Orange — important
+
+🔴 Red — very important
+
+🟣 Frog — must do today or trouble (pulsing glow + banner + foghorn)
+
+39. Delay & Reminders
+Set a hard "delay until" date on any task
+
+Auto-arms up to 3 reminders: T-2 days, T-1 day, T-0
+
+Every 45 s background check
+
+Fires browser notification + toast
+
+Bell badge on task row shows pending count
+
+Clearing the delay removes all reminders
+
+Works exactly for cases like "ثبت نام مربیگری شطرنج" — set the deadline, get reminded.
+
+40. XP & Leveling
+XP per task based on estimate + dopamine type
+
+Dislike = 2× base
+
+So-so = 1.3× base
+
+Love = 1× base
+
+Level = floor(sqrt(XP / 25)) + 1
+
+Progress bar in Today view
+
+41. Data Persistence
+Single localStorage key myday3
+
+Persisted: tasks, flows, dumps, energy modes, sprint, settings, XP, check-ins, drift counts, post-sessions, lists, energy behavior, collapse state, projects, sections, tags bank, lighthouse settings, fuel
+
+42. PWA Support
+Registers sw.js (if HTTPS)
+
+beforeinstallprompt captured
+
+Install button in settings
+
+Offline-capable when SW exists
+
+Manifest + icons expected (not embedded in HTML)
+
+43. Internationalization
+Persian (fa, default, RTL) and English (en, LTR)
+
+All strings go through tr() dictionary
+
+Persian digits converted via N()
+
+Jalali or Gregorian date formatting
+
+Live switching without reload
+
+44. Accessibility & Motion
+Focus-visible rings on all interactive elements
+
+prefers-reduced-motion disables beam, confetti, breathing drift
+
+Safe-area insets for iOS notch
+
+ARIA labels on icon-only buttons
+
+Minimum 44px tap targets
+
+45. Mobile Polish
+Max-width 520px (640px on tablet)
+
+Blur backdrop nav
+
+Fixed FABs: brain dump (bottom-left), add task (bottom-right), breathe (above brain dump)
+
+Safe-area aware sheets and nav
+
+-webkit-overflow-scrolling: touch on scrollable sheets
+
+46. First-launch Seed Data
+tasks:
+Here is my tick tick seed data 
+
+PINNED
+-  Mona Tasks(Oct 3)
+-  BIG Picture Data
+
+OVERDUE
+-  سبک زندگی و درآمد(Oct 7)
+    -  Respect project(Oct 7)
+    -  Notes on phone(Oct 7)
+-  Asakiri(Oct 7)
+-  خرید هوش مصنوعی(Oct 7)
+-  Hand writing(Oct 7)
+-  مقاومت به انسولین(Oct 7)
+-  سایر(Oct 7)
+-  قوانین احداث مدرسه هوم اسکول + هوش مصنوعی(Oct 10)
+-  مرادیان(Oct 10)
+
+TODAY
+-  بانک ملی: کارت + درخواست چک (Oct 12, 8:00AM)
+-  تمیز کردن کفش و پوشاک مدرسه(Oct 12, 4:00PM)
+-  قاب عینک سارا(Oct 12, 6:00PM)
+-  نوبت آزمایش(Oct 12, 9:00PM)
+-  لیلی درس بعد(Oct 12)
+-  زیپ شلوار(Oct 12)
+-   سواعدی(Oct 12)
+-  نهایی سازی مدرسه(Oct 12)
+    -  تدریس کتاب جدید / برنامه سبک تدریس بخش دوم(Oct 11, 11:00AM)
+    -  برنامه اموزش زبان در مدرسه(Oct 11)
+    -  تهیه و پرینت برگه ها(Oct 11)
+    -  شفاف سازی: تعریف قوانین و سیستم نمره دهی(Oct 11)
+    -  برنامه ثابت و مکتوب برای هر کلاس و پایه(Oct 11)
+-  مربیگری شطرنج(Oct 12)
+-  Fix TV(Oct 12)
+-  فیببک لیلی(Oct 12)
+-  اکشن لیست مالی(Oct 12)
+-  قسط مسکن ۱۱ هر ماه(Oct 12)
+-  شیشه شور ماشین(Oct 12)
+-   اندروید باکس (Oct 12)
+
+TOMORROW
+-  Call Mona(Oct 13, 10:00AM)
+-  GROCERY SHOPPING — weekly(Oct 13, 4:00PM)
+-   سه شنبه صدرا(Oct 13)
+-  آمادگی لیلی(Oct 13)
+-  تصمیم شغل دوم  (Oct 13)
+    -  تصمیم داوری شطرنج درجه ۳(Oct 13)
+    -  skyeng?(Oct 13)
+-  تصحیح سوالات تعیین سطح سطوح ۴ و بالاتر + بازخورد اوتوماتیک (Oct 13)
+-  ثبت امور مالی(Oct 13)
+
+NEXT 7 DAYS
+-  gym(Oct 14, 4:45PM)
+-  HOUSE CLEANING — 17:00–19:00(Oct 14, 7:00PM)
+-  WIFE TIME — 20:00–BEDTIME(Oct 15, 8:00PM)
+-  سفرنامه خوانی  جمعه(Oct 15)
+-  WEEKENDS OFF Work Family Time(Oct 15)
+-  روتین هفته(Oct 15)
+-  Clean house so weekends are free (Oct 15)
+-  Managerial: Define tomorrow key tasks(Oct 15)
+-  Manegarial:  Day Essential Tasks + Partner(Oct 15)
+-  FRIDAY — RELATIVES 18:00–23:00(Oct 16, 11:00PM)
+-   شنبه و دوشنبه شیف عصر راه موفقیت(Oct 17, 1:00PM)
+-  صدرا - دوشنبه(Oct 19, 7:01AM)
+
+LATER
+-  راه موفقیت - شیفت صبح(Oct 24, 12:10PM)
+-   شنبه و دوشنبه شیف صبح راه موفقیت(Oct 24)
+-  نت سیما(Nov 4, 6:30PM)
+-  یک درصد امام زمان (عج)(Nov 8, 12:00PM)
+
+NO DATE
+-  30 Days Marketing Deadline Reminder
+    -  0. Daily Marketing Efforts
+    -  📊 گزارش هفتگی عملکرد مارکتینگ
+-  7. وبینار اول
+-  ژئوپولتبک 
+-  اهداف کلیدی
+    -  شغل
+        -  1. صنعت
+        -  کسب و کار
+    -  ساخت پایه سالم
+        -  پلن ورزشی برای اصلاح فرم بدن و آمادگی جسمانی(Oct 7)
+        -  پیگیری فرزند
+            -  KID TIME(Oct 24)
+        -  مدیریت نیرودایورجنس
+            -  Notes to Action
+            -  ابر راه حل
+            -  ISSUE
+            -  Productivity & ADHD management
+            -  روتین صبح
+            -   ورزش + تغذیه
+            -  Key Progress Tasks
+            -  PDAC design for life and career
+        -  2. مدیریت بیش فعالی
+            -  ACTION Coach?
+            -  Strategy design
+            -  more books on ADHD
+        -  SPOUSE TIME
+-  اهداف ثانویه
+    -  1. سبک زندگی
+    -  3. سلامت جسم
+    -  4. سلامت روان
+-  1. Hitalki: About me  + Video + Activate Add
+-  5. تکمیل اطلاعات اینستاگرام
+-  یاداورهای مهم + تعهدات مالی
+    -  بیمه شخص ثالث ماشین(Oct 12, 7:00PM)
+    -  شارژ شهرک(Oct 12)
+    -  صندوق نسرین(Oct 22)
+
+NOTE
+-  نکات(Sep 30)
+-  Teacher Notes
+
+COMPLETED
+-  درخواست خروج پول های تاکی(Oct 12)
+-  Call Mona(Oct 12, 10:00AM)
+-  اطلاع به سمیرا برای دوشنبه(Oct 12)
+-   شنبه و دوشنبه شیف صبح راه موفقیت(Oct 12)
+-  یادآوری ابراهیم(Oct 12, 8:15AM)
+
+1 frog (BUILD APP)
+
+2 decisions (تصمیم شغل, بانک ملی)
+
+1 delay-windowed task (مربیگری شطرنج with reminders)
+
+1 noise
+
+2 regular
+
+projects (Respect Project, Android Box) with hyperfocus blocks
+-  app Art 11
+    -  برنامه تیک تیک نسخه مناسب من
+-  اسکرپ و دراپ شیپینگ
+-  Grammar Gym: Feedback
+-  ٰ‌Vocabulry Gym (CEFR , chucks, idiomaticity etc.)
+-  Feedback and Personal Progress Visulizer
+-  برنامه سازی
+-  Brain Hack
+-  Cool Ideas
+-  Life Experiences
+-  Excel Projects
+-  Study
+
+2 sections (کار, شخصی)
+
+3 tags (frog, quick, later)

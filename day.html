@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Week — Interactive Planner</title>
+<style>
+:root{
+  --bg:#eef0f6;
+  --panel:#ffffff;
+  --line:#e3e6f0;
+  --line-soft:#eceef6;
+  --ink:#151a28;
+  --ink-2:#5b6478;
+  --ink-3:#8b93a7;
+  --accent:#5145e5;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- layout ---------- */
+.app{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 340px;
+  gap:18px;
+  max-width:1480px;
+  margin:0 auto;
+  padding:20px;
+  align-items:start;
+}
+@media (max-width:1040px){
+  .app{grid-template-columns:1fr;padding:14px}
+}
+
+/* ---------- topbar ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;margin-bottom:14px;
+}
+.topbar h1{font-size:20px;margin:0 0 3px;letter-spacing:-.015em;font-weight:700}
+.topbar .sub{margin:0;font-size:13px;color:var(--ink-2)}
+.controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.seg{display:flex;background:#e2e5ef;border-radius:10px;padding:3px;gap:2px}
+.seg button{
+  border:0;background:transparent;font:inherit;font-size:13px;font-weight:600;
+  color:var(--ink-2);padding:6px 14px;border-radius:8px;cursor:pointer;
+  transition:.15s;
+}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(16,24,40,.12)}
+
+.btn{
+  border:1px solid var(--line);background:#fff;color:var(--ink);
+  font:inherit;font-size:13px;font-weight:600;padding:8px 14px;
+  border-radius:10px;cursor:pointer;transition:.15s;
+}
+.btn:hover{background:#f7f8fc;border-color:#d3d7e4}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#4438d4}
+.btn.danger{color:#c62b52;border-color:#f3d3dd;background:#fff5f8}
+.btn.danger:hover{background:#ffe9ef}
+.btn.ghost{color:var(--ink-2)}
+
+/* ---------- day picker ---------- */
+.daypicker{display:none;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.daypicker.on{display:flex}
+.daypicker button{
+  border:1px solid var(--line);background:#fff;font:inherit;font-size:12.5px;font-weight:600;
+  color:var(--ink-2);padding:7px 13px;border-radius:9px;cursor:pointer;
+}
+.daypicker button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.daypicker button.today:not(.on){border-color:#e2456d;color:#c62b52}
+
+/* ---------- calendar ---------- */
+.calcard{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;
+  box-shadow:0 1px 2px rgba(16,24,40,.04),0 12px 32px -20px rgba(16,24,40,.25);
+}
+.scroll{
+  overflow:auto;
+  height:calc(100dvh - 250px);
+  min-height:420px;
+  overscroll-behavior:contain;
+}
+.cal{
+  display:grid;
+  grid-template-columns:64px repeat(7,minmax(0,1fr));
+  min-width:900px;
+  position:relative;
+}
+.cal.dayview{min-width:340px}
+
+.corner{
+  position:sticky;top:0;left:0;z-index:9;background:var(--panel);
+  border-bottom:1px solid var(--line);border-right:1px solid var(--line);
+}
+.dhead{
+  position:sticky;top:0;z-index:6;background:var(--panel);
+  border-bottom:1px solid var(--line);
+  padding:11px 4px 10px;text-align:center;
+  font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-2);
+}
+.dhead .dsub{display:block;font-size:10.5px;font-weight:600;color:var(--ink-3);letter-spacing:0;margin-top:2px}
+.dhead.today{color:#d93a63;background:#fff7fa}
+.dhead.today .dsub{color:#e2456d}
+.cal.dayview .dhead{font-size:15px;padding:14px 8px;letter-spacing:.02em;text-transform:none}
+.cal.dayview .dhead .dsub{font-size:12px}
+
+.timecol{
+  position:sticky;left:0;z-index:4;background:var(--panel);
+  border-right:1px solid var(--line);
+}
+.tlabel{
+  position:absolute;right:9px;transform:translateY(-50%);
+  font-size:10.5px;font-weight:600;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+  background:var(--panel);padding:0 2px;
+}
+
+.daycol{
+  position:relative;
+  border-left:1px solid var(--line-soft);
+  background-image:
+    repeating-linear-gradient(to bottom,#e7eaf3 0 1px,transparent 1px 60px),
+    repeating-linear-gradient(to bottom,#f4f5fa 0 1px,transparent 1px 30px);
+  touch-action:pan-y;
+}
+.daycol.today{background-color:#fcfaff}
+.daycol.hover{background-color:#f7f8ff}
+
+/* ---------- blocks ---------- */
+.blk{
+  position:absolute;left:4px;right:4px;
+  background:var(--bgc);
+  border-left:4px solid var(--bdc);
+  color:var(--txc);
+  border-radius:9px;
+  padding:5px 8px;
+  font-size:11.5px;line-height:1.25;
+  overflow:hidden;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  box-shadow:0 1px 2px rgba(16,24,40,.06);
+  transition:box-shadow .13s,transform .07s;
+  display:flex;flex-direction:column;justify-content:flex-start;
+}
+.blk:hover{box-shadow:0 3px 10px -2px rgba(16,24,40,.22)}
+.blk .bt{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.blk .bs{font-size:9.5px;opacity:.72;font-variant-numeric:tabular-nums;margin-top:1px}
+.blk.tiny{padding:0 8px;justify-content:center}
+.blk.tiny .bs{display:none}
+.blk.selected{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--accent),0 6px 16px -4px rgba(16,24,40,.25)}
+.blk.dragging{
+  cursor:grabbing;z-index:60;opacity:.96;
+  box-shadow:0 16px 34px -10px rgba(16,24,40,.4),0 0 0 2px rgba(81,69,229,.35);
+  transition:none;
+}
+.cal.dayview .blk{font-size:13px;left:9px;right:9px;border-radius:11px;padding:8px 12px}
+.cal.dayview .blk .bs{font-size:11px}
+
+/* resize handles */
+.rz{position:absolute;left:0;right:0;height:9px;cursor:ns-resize;z-index:2}
+.rz-top{top:-1px}
+.rz-bot{bottom:-1px}
+.rz::after{
+  content:'';position:absolute;left:50%;transform:translateX(-50%);
+  width:28px;height:3px;border-radius:3px;background:var(--bdc);
+  opacity:0;transition:opacity .15s;
+}
+.rz-top::after{top:2px}
+.rz-bot::after{bottom:2px}
+.blk:hover .rz::after{opacity:.5}
+.rz:hover::after{opacity:.95 !important}
+
+body.dragging-active{cursor:grabbing;user-select:none}
+body.dragging-active .blk{transition:none}
+
+/* now line */
+.nowline{
+  position:absolute;left:0;right:0;height:0;
+  border-top:2px solid #e2456d;z-index:5;pointer-events:none;
+}
+.nowline::before{
+  content:'';position:absolute;left:-5px;top:-6px;
+  width:10px;height:10px;border-radius:50%;background:#e2456d;
+  box-shadow:0 0 0 3px rgba(226,69,109,.18);
+}
+
+/* drag tooltip */
+.dragtip{
+  position:fixed;z-index:999;pointer-events:none;
+  background:#151a28;color:#fff;font-size:11.5px;font-weight:650;
+  padding:5px 9px;border-radius:7px;letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;
+  opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;
+  white-space:nowrap;
+}
+.dragtip.on{opacity:1;transform:translateY(0)}
+
+/* ---------- sidebar ---------- */
+.side{display:flex;flex-direction:column;gap:14px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 17px;
+  box-shadow:0 1px 2px rgba(16,24,40,.04);
+}
+.card h3{
+  margin:0 0 13px;font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.empty{font-size:13px;color:var(--ink-3);line-height:1.6}
+.inspector{display:none}
+.inspector.on{display:block}
+.empty.hide{display:none}
+
+.field{display:block;margin-bottom:12px}
+.field > span{
+  display:block;font-size:10.5px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:5px;
+}
+.field input,.field select{
+  width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;
+  font:inherit;font-size:13.5px;color:var(--ink);background:#fff;
+  transition:.15s;
+}
+.field select{cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b93a7' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;
+}
+.field input:focus,.field select:focus{
+  outline:0;border-color:var(--accent);box-shadow:0 0 0 3px rgba(81,69,229,.14);
+}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two .field{margin-bottom:12px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:2px}
+.actions .btn{width:100%;padding:9px 10px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{background:#f7f8fc;border-radius:11px;padding:10px 8px;text-align:center}
+.stat b{display:block;font-size:16px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:10px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin-top:2px}
+.bar{display:flex;height:9px;border-radius:6px;overflow:hidden;background:#eef0f6;gap:2px}
+.bar i{display:block;height:100%;border-radius:3px;transition:width .25s}
+
+/* legend */
+.legend{display:flex;flex-direction:column;gap:9px}
+.lg{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink-2)}
+.sw{width:16px;height:16px;border-radius:5px;border-left:4px solid;flex:none}
+
+/* tips */
+.tips{margin:0;padding-left:17px;font-size:12.8px;line-height:1.65;color:var(--ink-2)}
+.tips li{margin-bottom:7px}
+.tips li:last-child{margin-bottom:0}
+.tips b{color:var(--ink);font-weight:650}
+
+kbd{
+  font:inherit;font-size:10.5px;font-weight:700;
+  background:#eef0f6;border:1px solid #dfe3ee;border-bottom-width:2px;
+  border-radius:5px;padding:1px 5px;color:var(--ink-2);
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ LEFT: CALENDAR ============ -->
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>My Week</h1>
+        <p class="sub" id="todayLabel"></p>
+      </div>
+      <div class="controls">
+        <div class="seg" id="shiftSeg">
+          <button data-shift="morning" class="on">Morning</button>
+          <button data-shift="evening">Evening</button>
+        </div>
+        <div class="seg" id="viewSeg">
+          <button data-view="week" class="on">Week</button>
+          <button data-view="day">Day</button>
+        </div>
+        <button class="btn" id="nowBtn">Jump to now</button>
+        <button class="btn primary" id="addBtn">+ Add block</button>
+      </div>
+    </div>
+
+    <div class="daypicker" id="dayPicker"></div>
+
+    <div class="calcard">
+      <div class="scroll" id="scroll">
+        <div class="cal" id="cal"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ RIGHT: SIDEBAR ============ -->
+  <aside class="side">
+
+    <section class="card">
+      <h3>Selected block</h3>
+      <div class="empty" id="emptyState">
+        Click a block to edit it.<br>
+        Drag on empty space to draw a new one.<br>
+        Drag the top/bottom edge to stretch it.
+      </div>
+      <div class="inspector" id="inspector">
+        <label class="field"><span>Title</span>
+          <input id="fTitle" type="text" placeholder="What is it?">
+        </label>
+        <label class="field"><span>Category</span>
+          <select id="fCat"></select>
+        </label>
+        <label class="field"><span>Day</span>
+          <select id="fDay"></select>
+        </label>
+        <div class="two">
+          <label class="field"><span>Start</span><select id="fStart"></select></label>
+          <label class="field"><span>End</span><select id="fEnd"></select></label>
+        </div>
+        <div class="actions">
+          <button class="btn ghost" id="fDup">Duplicate</button>
+          <button class="btn danger" id="fDel">Delete</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 id="statsTitle">Today</h3>
+      <div class="stats">
+        <div class="stat"><b id="sPlanned">—</b><span>planned</span></div>
+        <div class="stat"><b id="sWife">—</b><span>wife time</span></div>
+        <div class="stat"><b id="sSchool">—</b><span>school</span></div>
+      </div>
+      <div class="bar" id="sBar"></div>
+    </section>
+
+    <section class="card">
+      <h3>Legend</h3>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <section class="card">
+      <h3>Guardrails</h3>
+      <ul class="tips">
+        <li>Use the <b>Shift</b> toggle to switch between Morning and Evening schedules.</li>
+        <li>Morning shift: School 7:30–12:10 on Sat, Mon, Tue. Pick up wife 13:30–14:15 Sat–Wed.</li>
+        <li>Evening shift: School 13:00–17:10 on Sat, Mon. Morning school Mon 7:30–9:00, Tue 7:30–12:10.</li>
+        <li>Teaching: Leili &amp; Nidal on Sun/Wed evenings; Taranom on Mon/Thu evenings.</li>
+        <li>Press <kbd>Del</kbd> to remove a selected block, <kbd>Esc</kbd> to deselect.</li>
+        <li>Everything you change is saved in this browser automatically.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h3>Reset</h3>
+      <button class="btn danger" id="resetBtn" style="width:100%">Restore default week</button>
+    </section>
+
+  </aside>
+</div>
+
+<div class="dragtip" id="dragtip"></div>
+
+<script>
+/* =========================================================
+   CONFIG
+   ========================================================= */
+const DAY_START  = 7 * 60;          // 07:00
+const DAY_END    = 24 * 60;         // 24:00
+const PX_PER_MIN = 1;               // 1px per minute  → 60px per hour
+const SNAP       = 15;              // 15-minute snapping
+const GRID_H     = (DAY_END - DAY_START) * PX_PER_MIN;
+
+const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAY_FULL  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const TODAY     = (new Date().getDay() + 6) % 7;
+
+const CATS = {
+  wife:     { label:'Wife time',   bg:'#fde8ef', bd:'#e2456d', tx:'#8d1f42' },
+  school:   { label:'School',      bg:'#e0f2fe', bd:'#0284c7', tx:'#075985' },
+  teaching: { label:'Teaching',    bg:'#fef3c7', bd:'#d97706', tx:'#92400e' },
+  fixed:    { label:'Fixed',       bg:'#e7e9ff', bd:'#5145e5', tx:'#2f2b81' },
+  life:     { label:'Life task',   bg:'#dcf5e9', bd:'#0e9c62', tx:'#0a5b3b' },
+  flex:     { label:'Open / flex', bg:'#eef1f6', bd:'#94a3b8', tx:'#4b5563' },
+  rest:     { label:'Rest',        bg:'#f5f6f9', bd:'#cbd5e1', tx:'#6b7280' }
+};
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const toMin   = t => { const [h,m] = t.split(':').map(Number); return h*60 + m; };
+const fmt     = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
+const clamp   = (v,a,b) => Math.max(a, Math.min(b, v));
+const snapMin = m => Math.round(m / SNAP) * SNAP;
+const uid     = () => 'b' + Math.random().toString(36).slice(2,9);
+const esc     = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const durFmt  = m => { const h = Math.floor(m/60), mm = m%60; return h ? (mm ? `${h}h ${mm}m` : `${h}h`) : `${mm}m`; };
+
+function dateForDay(d){
+  const now = new Date();
+  const cur = (now.getDay() + 6) % 7;
+  const dt = new Date(now);
+  dt.setDate(now.getDate() - cur + d);
+  return dt;
+}
+
+/* =========================================================
+   DEFAULT SCHEDULES
+   ========================================================= */
+function defaultMorningShift(){
+  const out = [];
+  const add = (day, s, e, title, cat) => out.push({
+    id: uid(), day, start: toMin(s), end: toMin(e), title, cat
+  });
+
+  // Saturday
+  add(5, '07:10', '07:30', 'Leave for school', 'fixed');
+  add(5, '07:30', '12:10', 'School', 'school');
+  add(5, '12:30', '13:30', 'Rest', 'rest');
+  add(5, '13:30', '14:15', 'Pick up wife', 'fixed');
+
+  // Sunday
+  add(6, '13:30', '14:15', 'Pick up wife', 'fixed');
+  add(6, '18:30', '19:30', 'Leili (English)', 'teaching');
+  add(6, '20:00', '21:00', 'Nidal (English)', 'teaching');
+
+  // Monday
+  add(0, '07:10', '07:30', 'Leave for school', 'fixed');
+  add(0, '07:30', '12:10', 'School', 'school');
+  add(0, '12:30', '13:30', 'Rest', 'rest');
+  add(0, '13:30', '14:15', 'Pick up wife', 'fixed');
+  add(0, '17:00', '18:00', 'Taranom', 'teaching');
+
+  // Tuesday
+  add(1, '07:10', '07:30', 'Leave for school', 'fixed');
+  add(1, '07:30', '12:10', 'School', 'school');
+  add(1, '12:30', '13:30', 'Rest', 'rest');
+  add(1, '13:30', '14:15', 'Pick up wife', 'fixed');
+
+  // Wednesday
+  add(2, '13:30', '14:15', 'Pick up wife', 'fixed');
+  add(2, '18:30', '19:30', 'Leili (English)', 'teaching');
+  add(2, '20:00', '21:00', 'Nidal (English)', 'teaching');
+
+  // Thursday
+  add(3, '17:00', '18:00', 'Taranom', 'teaching');
+
+  // Friday – free
+
+  return out;
+}
+
+function defaultEveningShift(){
+  const out = [];
+  const add = (day, s, e, title, cat) => out.push({
+    id: uid(), day, start: toMin(s), end: toMin(e), title, cat
+  });
+
+  // Saturday
+  add(5, '12:40', '13:00', 'Leave for school', 'fixed');
+  add(5, '13:00', '17:10', 'School', 'school');
+
+  // Sunday
+  add(6, '18:30', '19:30', 'Leili (English)', 'teaching');
+  add(6, '20:00', '21:00', 'Nidal (English)', 'teaching');
+
+  // Monday
+  add(0, '07:30', '09:00', 'School', 'school');
+  add(0, '12:40', '13:00', 'Leave for school', 'fixed');
+  add(0, '13:00', '17:10', 'School', 'school');
+  add(0, '20:00', '21:00', 'Taranom', 'teaching');
+
+  // Tuesday
+  add(1, '07:10', '07:30', 'Leave for school', 'fixed');
+  add(1, '07:30', '12:10', 'School', 'school');
+
+  // Wednesday
+  add(2, '18:30', '19:30', 'Leili (English)', 'teaching');
+  add(2, '20:00', '21:00', 'Nidal (English)', 'teaching');
+
+  // Thursday
+  add(3, '17:00', '18:00', 'Taranom', 'teaching');
+
+  // Friday – free
+
+  return out;
+}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+const LS_KEY = 'myweek.v2';
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return null;
+    const p = JSON.parse(raw);
+    if(!p || !p.morning || !p.evening) return null;
+    return p;
+  }catch(e){ return null; }
+}
+
+let allEvents = { morning: [], evening: [] };
+let shift     = 'morning';
+let events    = [];
+let view      = 'week';           // 'week' | 'day'
+let activeDay = TODAY;            // for day view
+let selectedId = null;
+let drag      = null;             // active drag/resize/create
+
+function save(){
+  try{
+    allEvents[shift] = events;
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      morning: allEvents.morning,
+      evening: allEvents.evening,
+      shift
+    }));
+  }catch(e){}
+}
+
+const saved = loadState();
+if (saved) {
+  allEvents.morning = saved.morning;
+  allEvents.evening = saved.evening;
+  shift = saved.shift || 'morning';
+} else {
+  allEvents.morning = defaultMorningShift();
+  allEvents.evening = defaultEveningShift();
+  shift = 'morning';
+}
+events = allEvents[shift];
+
+/* =========================================================
+   DOM
+   ========================================================= */
+const calEl      = document.getElementById('cal');
+const scrollEl   = document.getElementById('scroll');
+const tipEl      = document.getElementById('dragtip');
+const inspector  = document.getElementById('inspector');
+const emptyState = document.getElementById('emptyState');
+const fTitle     = document.getElementById('fTitle');
+const fCat       = document.getElementById('fCat');
+const fDay       = document.getElementById('fDay');
+const fStart     = document.getElementById('fStart');
+const fEnd       = document.getElementById('fEnd');
+
+/* =========================================================
+   RENDER — CALENDAR
+   ========================================================= */
+function blockHTML(ev){
+  const c   = CATS[ev.cat] || CATS.flex;
+  const top = (ev.start - DAY_START) * PX_PER_MIN;
+  const h   = (ev.end - ev.start) * PX_PER_MIN;
+  const tiny = h < 36;
+  return `<div class="blk${tiny ? ' tiny' : ''}" data-id="${ev.id}"
+      style="top:${top}px;height:${h}px;--bgc:${c.bg};--bdc:${c.bd};--txc:${c.tx}">
+      <div class="rz rz-top" data-rz="top"></div>
+      <div class="bt">${esc(ev.title)}</div>
+      <div class="bs">${fmt(ev.start)}–${fmt(ev.end)}</div>
+      <div class="rz rz-bot" data-rz="bottom"></div>
+    </div>`;
+}
+
+function render(){
+  const days = view === 'week'
+    ? [0,1,2,3,4,5,6]
+    : [activeDay];
+
+  calEl.classList.toggle('dayview', view === 'day');
+  calEl.style.gridTemplateColumns = `64px repeat(${days.length}, minmax(0,1fr))`;
+  calEl.style.minWidth = view === 'week' ? '900px' : '340px';
+
+  let html = '<div class="corner"></div>';
+
+  // header row
+  days.forEach(d => {
+    const dt = dateForDay(d);
+    const isToday = d === TODAY;
+    html += `<div class="dhead${isToday ? ' today' : ''}">
+        <span>${view === 'day' ? DAY_FULL[d] : DAY_NAMES[d]}</span>
+        <span class="dsub">${dt.getDate()}</span>
+      </div>`;
+  });
+
+  // time gutter
+  html += `<div class="timecol" style="height:${GRID_H}px">`;
+  for (let h = 7; h < 24; h++){
+    html += `<div class="tlabel" style="top:${(h*60 - DAY_START) * PX_PER_MIN}px">${String(h).padStart(2,'0')}:00</div>`;
+  }
+  html += '</div>';
+
+  // day columns
+  days.forEach(d => {
+    const isToday = d === TODAY;
+    html += `<div class="daycol${isToday ? ' today' : ''}" data-day="${d}" style="height:${GRID_H}px">`;
+    events
+      .filter(ev => ev.day === d)
+      .sort((a,b) => a.start - b.start || a.end - b.end)
+      .forEach(ev => { html += blockHTML(ev); });
+    html += '</div>';
+  });
+
+  calEl.innerHTML = html;
+
+  // bind block interactions
+  calEl.querySelectorAll('.blk').forEach(el => {
+    el.addEventListener('pointerdown', onBlockDown);
+  });
+
+  paintNow();
+
+  if (selectedId) {
+    const el = calEl.querySelector(`.blk[data-id="${selectedId}"]`);
+    if (el) el.classList.add('selected');
+  }
+}
+
+function paintNow(){
+  calEl.querySelectorAll('.nowline').forEach(n => n.remove());
+  const now = new Date();
+  const m = now.getHours()*60 + now.getMinutes();
+  if (m < DAY_START || m > DAY_END) return;
+  const col = calEl.querySelector(`.daycol[data-day="${TODAY}"]`);
+  if (!col) return;
+  const line = document.createElement('div');
+  line.className = 'nowline';
+  line.style.top = ((m - DAY_START) * PX_PER_MIN) + 'px';
+  col.appendChild(line);
+}
+
+function placeBlock(el, ev){
+  const h = (ev.end - ev.start) * PX_PER_MIN;
+  el.style.top    = ((ev.start - DAY_START) * PX_PER_MIN) + 'px';
+  el.style.height = h + 'px';
+  el.classList.toggle('tiny', h < 36);
+  const bt = el.querySelector('.bt'); if (bt) bt.textContent = ev.title;
+  const bs = el.querySelector('.bs'); if (bs) bs.textContent = `${fmt(ev.start)}–${fmt(ev.end)}`;
+}
+
+/* =========================================================
+   DRAG / RESIZE / CREATE
+   ========================================================= */
+function onBlockDown(e){
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  e.stopPropagation();
+  e.preventDefault();
+
+  const el = e.currentTarget;
+  const ev = events.find(x => x.id === el.dataset.id);
+  if (!ev) return;
+
+  const rz = e.target.closest('.rz');
+  const mode = rz ? (rz.dataset.rz === 'top' ? 'top' : 'bottom') : 'move';
+
+  startDrag(e, el, ev, mode);
+}
+
+function onColumnDown(e){
+  if (e.target.closest('.blk')) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (e.pointerType !== 'mouse') return;   // touch: use + Add button
+
+  const col  = e.currentTarget;
+  const rect = col.getBoundingClientRect();
+  const m    = snapMin(DAY_START + (e.clientY - rect.top) / PX_PER_MIN);
+  const day  = +col.dataset.day;
+
+  const ev = {
+    id: uid(), day,
+    start: clamp(m, DAY_START, DAY_END - 60),
+    end:   clamp(m + 60, DAY_START + 60, DAY_END),
+    title: 'New block', cat: 'flex'
+  };
+  events.push(ev);
+  render();
+
+  const el = calEl.querySelector(`.blk[data-id="${ev.id}"]`);
+  if (el) startDrag(e, el, ev, 'create', m);
+}
+
+function startDrag(e, el, ev, mode, anchor){
+  const colRects = [...calEl.querySelectorAll('.daycol')].map(c => ({
+    day: +c.dataset.day,
+    r: c.getBoundingClientRect()
+  }));
+
+  drag = {
+    el, ev, mode, anchor,
+    startX: e.clientX, startY: e.clientY,
+    orig: { start: ev.start, end: ev.end, day: ev.day },
+    colRects,
+    moved: false
+  };
+
+  el.classList.add('dragging');
+  document.body.classList.add('dragging-active');
+
+  window.addEventListener('pointermove', onDragMove, { passive:false });
+  window.addEventListener('pointerup', onDragEnd);
+  window.addEventListener('pointercancel', onDragEnd);
+}
+
+function dayFromX(x){
+  if (!drag) return null;
+  for (const c of drag.colRects){
+    if (x >= c.r.left && x <= c.r.right) return c.day;
+  }
+  return null;
+}
+
+function onDragMove(e){
+  if (!drag) return;
+
+  const dx = e.clientX - drag.startX;
+  const dy = e.clientY - drag.startY;
+  if (!drag.moved && Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+  drag.moved = true;
+  e.preventDefault();
+
+  const ev = drag.ev;
+  const o  = drag.orig;
+
+  if (drag.mode === 'create'){
+    const cr = drag.colRects.find(c => c.day === ev.day) || drag.colRects[0];
+    let m = snapMin(DAY_START + (e.clientY - cr.r.top) / PX_PER_MIN);
+    m = clamp(m, DAY_START, DAY_END);
+    let s  = Math.min(drag.anchor, m);
+    let en = Math.max(drag.anchor, m);
+    if (en - s < SNAP) en = s + SNAP;
+    if (en > DAY_END){ en = DAY_END; s = Math.max(DAY_START, en - SNAP); }
+    ev.start = s; ev.end = en;
+  }
+  else {
+    const dm = Math.round((dy / PX_PER_MIN) / SNAP) * SNAP;
+
+    if (drag.mode === 'move'){
+      const len = o.end - o.start;
+      ev.start = clamp(o.start + dm, DAY_START, DAY_END - len);
+      ev.end   = ev.start + len;
+
+      const day = dayFromX(e.clientX);
+      if (day !== null && day !== ev.day){
+        ev.day = day;
+        const target = calEl.querySelector(`.daycol[data-day="${day}"]`);
+        if (target) target.appendChild(drag.el);
+      }
+    }
+    else if (drag.mode === 'bottom'){
+      ev.start = o.start;
+      ev.end   = clamp(o.end + dm, o.start + SNAP, DAY_END);
+    }
+    else { // top
+      ev.end   = o.end;
+      ev.start = clamp(o.start + dm, DAY_START, o.end - SNAP);
+    }
+  }
+
+  placeBlock(drag.el, ev);
+  showTip(e, ev);
+}
+
+function onDragEnd(){
+  if (!drag) return;
+
+  window.removeEventListener('pointermove', onDragMove);
+  window.removeEventListener('pointerup', onDragEnd);
+  window.removeEventListener('pointercancel', onDragEnd);
+
+  const { el, ev, moved, mode, anchor } = drag;
+  el.classList.remove('dragging');
+  document.body.classList.remove('dragging-active');
+  hideTip();
+  drag = null;
+
+  if (mode === 'create' && !moved){
+    const s = clamp(anchor, DAY_START, DAY_END - 60);
+    ev.start = s;
+    ev.end   = s + 60;
+  }
+  if (ev.end - ev.start < SNAP){
+    ev.end = Math.min(DAY_END, ev.start + 60);
+  }
+
+  save();
+  render();
+  renderStats();
+
+  if (mode === 'create' || moved) selectBlock(ev.id);
+}
+
+function showTip(e, ev){
+  tipEl.textContent = `${DAY_NAMES[ev.day]} · ${fmt(ev.start)}–${fmt(ev.end)}  (${durFmt(ev.end - ev.start)})`;
+  tipEl.style.left = Math.min(window.innerWidth - 190, e.clientX + 16) + 'px';
+  tipEl.style.top  = (e.clientY - 34) + 'px';
+  tipEl.classList.add('on');
+}
+function hideTip(){ tipEl.classList.remove('on'); }
+
+/* =========================================================
+   SELECTION + INSPECTOR
+   ========================================================= */
+function current(){ return events.find(x => x.id === selectedId) || null; }
+
+function selectBlock(id){
+  selectedId = id;
+  calEl.querySelectorAll('.blk.selected').forEach(el => el.classList.remove('selected'));
+
+  const ev = current();
+  if (!ev){
+    inspector.classList.remove('on');
+    emptyState.classList.remove('hide');
+    return;
+  }
+
+  const el = calEl.querySelector(`.blk[data-id="${id}"]`);
+  if (el) el.classList.add('selected');
+
+  emptyState.classList.add('hide');
+  inspector.classList.add('on');
+
+  fTitle.value = ev.title;
+  fCat.value   = ev.cat;
+  fDay.value   = ev.day;
+  fStart.value = ev.start;
+  fEnd.value   = ev.end;
+}
+
+function refreshAfterEdit(){
+  save();
+  render();
+  renderStats();
+  if (selectedId) selectBlock(selectedId);
+}
+
+/* field bindings */
+fTitle.addEventListener('input', () => {
+  const ev = current(); if (!ev) return;
+  ev.title = fTitle.value;
+  const bt = calEl.querySelector(`.blk[data-id="${ev.id}"] .bt`);
+  if (bt) bt.textContent = ev.title;
+  save();
+});
+
+fCat.addEventListener('change', () => {
+  const ev = current(); if (!ev) return;
+  ev.cat = fCat.value;
+  refreshAfterEdit();
+});
+
+fDay.addEventListener('change', () => {
+  const ev = current(); if (!ev) return;
+  ev.day = +fDay.value;
+  refreshAfterEdit();
+});
+
+fStart.addEventListener('change', () => {
+  const ev = current(); if (!ev) return;
+  const s = +fStart.value;
+  ev.start = clamp(s, DAY_START, ev.end - SNAP);
+  refreshAfterEdit();
+});
+
+fEnd.addEventListener('change', () => {
+  const ev = current(); if (!ev) return;
+  const e2 = +fEnd.value;
+  ev.end = clamp(e2, ev.start + SNAP, DAY_END);
+  refreshAfterEdit();
+});
+
+document.getElementById('fDel').addEventListener('click', deleteSelected);
+
+document.getElementById('fDup').addEventListener('click', () => {
+  const ev = current(); if (!ev) return;
+  const copy = { ...ev, id: uid(), start: Math.min(ev.start + 60, DAY_END - 30) };
+  copy.end = Math.min(copy.start + (ev.end - ev.start), DAY_END);
+  events.push(copy);
+  refreshAfterEdit();
+  selectBlock(copy.id);
+});
+
+function deleteSelected(){
+  if (!selectedId) return;
+  events = events.filter(e => e.id !== selectedId);
+  selectedId = null;
+  inspector.classList.remove('on');
+  emptyState.classList.remove('hide');
+  save();
+  render();
+  renderStats();
+}
+
+/* =========================================================
+   STATS
+   ========================================================= */
+function renderStats(){
+  const evs = events.filter(e => e.day === TODAY);
+  const sum = cat => evs.filter(e => e.cat === cat).reduce((s,e) => s + (e.end - e.start), 0);
+
+  const wife     = sum('wife');
+  const school   = sum('school');
+  const teaching = sum('teaching');
+  const fixed    = sum('fixed');
+  const life     = sum('life');
+  const flex     = sum('flex');
+  const rest     = sum('rest');
+  const total    = wife + school + teaching + fixed + life + flex + rest;
+
+  document.getElementById('sPlanned').textContent = total ? durFmt(total) : '0h';
+  document.getElementById('sWife').textContent    = durFmt(wife);
+  document.getElementById('sSchool').textContent  = durFmt(school);
+  document.getElementById('statsTitle').textContent = `Today · ${DAY_FULL[TODAY]}`;
+
+  const bar = document.getElementById('sBar');
+  if (!total){
+    bar.innerHTML = '';
+    return;
+  }
+  const order = ['wife','school','teaching','fixed','life','flex','rest'];
+  bar.innerHTML = order.map(cat => {
+    const v = sum(cat);
+    return v > 0 ? `<i style="width:${(v/total*100).toFixed(2)}%;background:${CATS[cat].bd}"></i>` : '';
+  }).join('');
+}
+
+/* =========================================================
+   LEGEND
+   ========================================================= */
+function renderLegend(){
+  document.getElementById('legend').innerHTML = Object.values(CATS).map(c =>
+    `<div class="lg"><span class="sw" style="background:${c.bg};border-color:${c.bd}"></span>${c.label}</div>`
+  ).join('');
+}
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+document.getElementById('shiftSeg').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const newShift = b.dataset.shift;
+  if (newShift === shift) return;
+  // save current events before switching
+  allEvents[shift] = events;
+  shift = newShift;
+  events = allEvents[shift] || (shift === 'morning' ? defaultMorningShift() : defaultEveningShift());
+  allEvents[shift] = events;
+  // update UI
+  document.querySelectorAll('#shiftSeg button').forEach(x => x.classList.toggle('on', x.dataset.shift === shift));
+  save();
+  render();
+  renderStats();
+  selectBlock(null);
+});
+
+document.getElementById('viewSeg').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  view = b.dataset.view;
+  document.querySelectorAll('#viewSeg button').forEach(x => x.classList.toggle('on', x === b));
+  document.getElementById('dayPicker').classList.toggle('on', view === 'day');
+  render();
+  renderDayPicker();
+  if (view === 'day') scrollToTime(DAY_START + 60);
+});
+
+function renderDayPicker(){
+  const dp = document.getElementById('dayPicker');
+  dp.innerHTML = DAY_NAMES.map((n,i) =>
+    `<button data-day="${i}" class="${i === activeDay ? 'on' : ''}${i === TODAY ? ' today' : ''}">${n}</button>`
+  ).join('');
+}
+
+document.getElementById('dayPicker').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  activeDay = +b.dataset.day;
+  renderDayPicker();
+  render();
+});
+
+document.getElementById('nowBtn').addEventListener('click', () => {
+  if (view === 'day' && activeDay !== TODAY){
+    activeDay = TODAY;
+    renderDayPicker();
+    render();
+  }
+  const now = new Date();
+  scrollToTime(now.getHours()*60 + now.getMinutes() - 120);
+  paintNow();
+});
+
+document.getElementById('addBtn').addEventListener('click', () => {
+  const day = view === 'day' ? activeDay : TODAY;
+  const start = findGap(day, 60);
+  const ev = {
+    id: uid(), day,
+    start, end: Math.min(start + 60, DAY_END),
+    title: 'New block', cat: 'life'
+  };
+  events.push(ev);
+  save();
+  render();
+  renderStats();
+  selectBlock(ev.id);
+  scrollToTime(ev.start - 60);
+});
+
+function findGap(day, len){
+  const evs = events.filter(e => e.day === day).sort((a,b) => a.start - b.start);
+  let t = DAY_START;
+  for (const e of evs){
+    if (e.start - t >= len) return t;
+    t = Math.max(t, e.end);
+  }
+  return (DAY_END - t >= len) ? t : DAY_START;
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Restore the default week for the current shift? Your changes will be lost.')) return;
+  events = shift === 'morning' ? defaultMorningShift() : defaultEveningShift();
+  allEvents[shift] = events;
+  selectedId = null;
+  inspector.classList.remove('on');
+  emptyState.classList.remove('hide');
+  save();
+  render();
+  renderStats();
+});
+
+/* keyboard */
+document.addEventListener('keydown', e => {
+  if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if (e.key === 'Escape'){ selectBlock(null); }
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId){
+    e.preventDefault();
+    deleteSelected();
+  }
+});
+
+/* scrolling */
+function scrollToTime(min){
+  const y = (min - DAY_START) * PX_PER_MIN;
+  scrollEl.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function fillSelects(){
+  // category
+  fCat.innerHTML = Object.entries(CATS)
+    .map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('');
+
+  // day
+  fDay.innerHTML = DAY_FULL
+    .map((n,i) => `<option value="${i}">${n}</option>`).join('');
+
+  // times
+  const opts = [];
+  for (let m = DAY_START; m <= DAY_END; m += SNAP){
+    opts.push(`<option value="${m}">${fmt(m)}</option>`);
+  }
+  fStart.innerHTML = opts.join('');
+  fEnd.innerHTML   = opts.join('');
+}
+
+function initHeader(){
+  const now = new Date();
+  const opts = { weekday:'long', month:'long', day:'numeric' };
+  document.getElementById('todayLabel').textContent =
+    now.toLocaleDateString(undefined, opts) + ' · today is highlighted';
+}
+
+function setShiftUI(){
+  document.querySelectorAll('#shiftSeg button').forEach(x =>
+    x.classList.toggle('on', x.dataset.shift === shift)
+  );
+}
+
+function init(){
+  fillSelects();
+  renderLegend();
+  initHeader();
+  renderDayPicker();
+  setShiftUI();
+
+  calEl.addEventListener('pointerdown', e => {
+    const col = e.target.closest('.daycol');
+    if (col) onColumnDown.call(null, Object.assign(e, { currentTarget: col }));
+  });
+
+  render();
+  renderStats();
+
+  // initial scroll: show the current hour
+  const now = new Date();
+  const m = now.getHours()*60 + now.getMinutes();
+  scrollToTime(m > DAY_START && m < DAY_END ? m - 150 : DAY_START + 60);
+
+  // live clock
+  setInterval(paintNow, 30000);
+}
+
+init();
+</script>
+</body>
+</html>

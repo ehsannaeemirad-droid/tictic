@@ -1,0 +1,10 @@
+# Line endings: .editorconfig asks for `lf`, and GitHub Pages serves these
+# files from Linux. Without this, a Windows checkout rewrites every text file
+# to CRLF and each commit becomes a whole-file diff.
+* text=auto eol=lf
+
+# Binary assets — git must never normalise these.
+*.png binary
+*.ico binary
+*.jpg binary
+*.woff2 binary

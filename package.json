@@ -1,0 +1,26 @@
+{
+  "name": "tictic-adhd-planner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A calm, offline-first daily planner for ADHD brains. TickTick-style lists, frog priorities, focus timer, habits, weekly timetable. Persian (RTL) and English. No dependencies, no build step, no server.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "check": "node tools/check.mjs",
+    "check:sw": "node tools/build-sw.mjs",
+    "build:sw": "node tools/build-sw.mjs --write",
+    "check:contrast": "node tools/contrast.mjs --all",
+    "check:calendar": "node tools/calendar.mjs",
+    "check:horizons": "node tools/check-horizons.mjs",
+    "check:roundtrip": "node tools/roundtrip.mjs",
+    "check:css": "node tools/check-css-coverage.mjs",
+    "check:usage": "node tools/check-usage.mjs",
+    "build:samples": "node tools/make-samples.mjs",
+    "build:icons": "python3 tools/make-icons.py",
+    "build:fonts": "node tools/fetch-fonts.mjs"
+  }
+}

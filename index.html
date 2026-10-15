@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F7F4EF">
+<meta name="description" content="TicTic — a calm daily planner for ADHD brains: TickTick-style lists, frog priorities, focus timer, no shame.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="TicTic">
+<meta name="mobile-web-app-capable" content="yes">
+<title>TicTic — ADHD planner</title>
+
+<!-- Appearance is applied before first paint (no flash of the wrong theme). -->
+<script src="src/js/theme-boot.js"></script>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="public/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="public/icons/favicon-48.png" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="public/icons/apple-touch-icon-180.png">
+
+<!-- Type is self-hosted: no CDN, works offline, no layout shift.
+     The Arabic subset is preloaded: it is the face the fa UI paints with. -->
+<link rel="preload" href="public/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="src/css/fonts.css">
+<link rel="stylesheet" href="src/css/tokens.css">
+<link rel="stylesheet" href="src/css/base.css">
+<link rel="stylesheet" href="src/css/components.css">
+<link rel="stylesheet" href="src/css/shell.css">
+<link rel="stylesheet" href="src/css/views.css">
+</head>
+<body>
+  <div id="app">
+    <!-- replaced on boot; keeps the first paint honest and shows a skeleton instead of a blank page -->
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="sb-seg">TicTic</div>
+        <div class="skeleton" style="height:44px;margin:4px 12px"></div>
+        <div class="skeleton" style="height:44px;margin:4px 12px"></div>
+        <div class="skeleton" style="height:44px;margin:4px 12px"></div>
+      </aside>
+      <div class="content">
+        <div class="main">
+          <div class="skeleton" style="height:26px;width:180px;margin-bottom:16px"></div>
+          <div class="skeleton" style="height:64px;margin-bottom:12px"></div>
+          <div class="skeleton" style="height:64px;margin-bottom:12px"></div>
+          <div class="skeleton" style="height:64px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="overlays"></div>
+  <div id="live" role="status" aria-live="polite" class="sr-only"></div>
+
+  <noscript>
+    <div class="state-card" style="margin:24px">
+      <h3>TicTic needs JavaScript</h3>
+      <p>Everything runs locally in your browser — there is no server. Please enable JavaScript to use the planner. Your data is never sent anywhere.</p>
+    </div>
+  </noscript>
+
+  <!-- The service worker is registered by src/js/pwa.js (one place, so the
+       version prompt and the registration cannot disagree). -->
+  <script type="module" src="src/js/main.js"></script>
+</body>
+</html>

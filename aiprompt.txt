@@ -1,0 +1,396 @@
+AI Vibe-Coding Prompt — ADHD-Optimized TickTick Redesign
+You are a senior full-stack product engineer and design-systems specialist. Build a fully interactive, production-quality front-end prototype of a task-management app called TickTick ADHD — visually and structurally close to TickTick, but redesigned for adults with ADHD and executive dysfunction.
+
+Work iteratively. After each phase, pause and show what you built before moving on. Use the design decisions, research findings, and inventories below as binding constraints, not suggestions.
+
+0. Project brief
+Build a responsive web app that preserves TickTick’s familiar surfaces — sidebar, task lists, task detail, calendar, Eisenhower matrix, focus/Pomodoro, habits, countdown, search, filters — while removing friction around starting, choosing, resuming, and replanning. The app must feel like TickTick, not like a different product. Familiarity is a feature.
+
+Tech stack:
+
+HTML5, CSS3, vanilla JavaScript (ES modules)
+
+Tailwind CSS via CDN or build step
+
+Optional: Alpine.js or petite-vue for lightweight reactivity
+
+Animation: CSS transitions, Web Animations API, and a small motion utility. No heavy frameworks unless explicitly requested.
+
+LocalStorage / IndexedDB for persistence
+
+No backend required for the prototype
+
+1. Non-negotiable design principles
+Encode these into every component:
+
+Capture first, classify later. A title is enough to save a task. Date, list, priority, tags, recurrence are optional at capture.
+
+Recognition over recall. Keep labels and prior context visible. Never require users to remember icon meanings, previous steps, or where they left off.
+
+One prominent next action, not one permitted action. Highlight a useful next step while keeping full navigation visible.
+
+Separate commitments. “Due,” “scheduled,” “estimated,” and “remind me” are different concepts with different labels and behavior.
+
+Progressive disclosure, never concealment. Essentials first; advanced scheduling, filters, recurrence, collaboration one tap away.
+
+Make interruption survivable. Save drafts, preserve position, show “You were working on…” with Resume and Dismiss.
+
+Let users tune stimulation. Density, color, sound, motion, timer visibility, and reminders adjustable independently.
+
+Fresh start without erasing history. Overdue tasks stay visible and recoverable. Replanning is not punishment.
+
+Explain automation; require consent. AI or rules may suggest, but never silently change dates, assignments, recurrence, or priority.
+
+Test the whole journey. Capture → find → start → pause → resume → replan → finish.
+
+2. Design system tokens
+Define these as CSS custom properties and Tailwind theme extensions:
+
+Color
+
+--bg-primary, --bg-secondary, --bg-elevated, --bg-hover
+
+--text-primary, --text-secondary, --text-muted
+
+--accent (TickTick blue), --accent-hover
+
+Priority: --priority-high, --priority-medium, --priority-low, --priority-none
+
+Status: --success, --warning, --danger, --overdue
+
+Never rely on color alone for priority or status — always pair with label, icon, or shape.
+
+Typography
+
+Font: Inter or system stack
+
+Scale: 12 / 14 / 16 / 18 / 20 / 24 / 32
+
+Line height: 1.4–1.6 for body, 1.2–1.3 for headings
+
+Support text resizing up to 200% without loss of function
+
+Spacing
+
+4px base unit. Scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64.
+
+Radius
+
+--radius-sm: 6px, --radius-md: 10px, --radius-lg: 14px, --radius-full: 9999px
+
+Shadows
+
+Subtle elevation only. No heavy drop shadows.
+
+Motion
+
+Durations: 120ms (micro), 200ms (standard), 320ms (emphasis)
+
+Easing: cubic-bezier(0.2, 0, 0, 1) for enter, cubic-bezier(0.4, 0, 1, 1) for exit
+
+Respect prefers-reduced-motion: reduce — disable non-essential motion, keep state changes legible
+
+3. App architecture
+text
+App shell
+├── Sidebar / mobile nav
+│   ├── Account / avatar menu
+│   ├── Smart lists: Today, Next 7 Days, Now, Inbox, All, Completed, Won't Do
+│   ├── User lists and folders
+│   ├── Tags
+│   ├── Filters
+│   └── Module switcher: Tasks, Calendar, Matrix, Focus, Habits, Countdown, Search
+├── Main content area (route-dependent)
+└── Global overlays
+    ├── Quick Add modal / sheet
+    ├── Task detail pane (side panel on desktop, full page on mobile)
+    ├── Command palette (Ctrl/Cmd+K)
+    ├── Resume cue toast
+    └── Undo bar
+State model:
+
+tasks[], lists[], folders[], tags[], filters[], habits[], countdowns[], focusSessions[]
+
+Each task: id, title, notes, dueDate, plannedStart, estimate, reminder[], recurrence, priority, tags[], listId, subtasks[], checkItems[], progress, status, pinned, createdAt, modifiedAt, activity[]
+
+Persist to IndexedDB. Mirror to localStorage for fast boot.
+
+4. Screen-by-screen build specification
+4.1 Sidebar / navigation
+TickTick-style left sidebar, collapsible.
+
+Smart lists with counts.
+
+New: “Now” smart list — a small, user-curated set (default max 5) with a visible reason for each item (“due today,” “you pinned this,” “planned for now”).
+
+Drag tasks onto lists, smart lists, or tags to move/apply.
+
+Keyboard: Ctrl/Cmd+K opens command palette. ? shows shortcuts.
+
+4.2 Tasks — list view
+Task row shows: checkbox, title, due date chip, priority dot + label, tags, list name (when not in that list), subtask progress, pin.
+
+Primary row actions visible on hover/focus: Complete, Start, Open details. Organization tools remain nearby but secondary.
+
+Group & Sort: by time, priority, tag, list, created, modified, assignee.
+
+Custom sections within a list.
+
+Bulk select via Ctrl-click, Shift-click, Shift+arrows, drag-selection. Bulk actions: complete, postpone, move, tag, priority, delete.
+
+Empty state: supportive, specific, not guilt-inducing. Example: “Nothing here. Add a task or pick something from Today.”
+
+Completed and Won’t Do collections accessible from sidebar.
+
+4.3 Quick Add
+Title-only capture. Save with Enter.
+
+Recognized date/time/repeat/tag shown as editable chips below the input, never auto-applied silently.
+
+Optional inline prompts after save: “Add a first step?” and “When will you start?” — both skippable.
+
+Voice input button (Web Speech API where available).
+
+4.4 Task detail
+Full task model, exposed progressively:
+
+Title, notes (Markdown), attachments
+
+Date, time, duration — labeled distinctly: Due, Planned start, Estimate
+
+Reminders — multiple, custom, with a plain-language preview: “You’ll be reminded 30 minutes before.”
+
+Recurrence — daily/weekly/monthly/yearly/custom; by due date or completion; “modify only this occurrence” option
+
+Priority — High / Medium / Low / None, with text labels not just colors
+
+Tags, list, section
+
+Check items and subtasks — explain the difference inline. Never silently convert one into the other.
+
+Progress percentage, pin, Won’t Do, restart, duplicate, save as template, convert to note
+
+Share, comment, copy link, activity log
+
+Start button — two modes: “Start without timer” and “Start timer”
+
+Add first step button beside the title
+
+4.5 Focus / Pomodoro
+Timer optional. Users can start a task without a timer.
+
+Active session shows task title, first step, elapsed time.
+
+Pause, resume, end.
+
+On interruption or tab switch: save session context. On return, show dismissible resume cue: “You were working on [task]. Resume / Dismiss.”
+
+Focus statistics view.
+
+Never auto-start a timer.
+
+4.6 Calendar
+Week, month, year, list, agenda views.
+
+Show TickTick tasks + subscribed calendars.
+
+View options: color rules, list filter, Modern/Classic, icons, additional time zones, completed items, check items, future repeats, habits, focus records.
+
+Drag to reschedule. Keyboard alternative for every drag action.
+
+Bulk postpone with preview and Undo.
+
+Recurring edit: “This occurrence / All occurrences” clearly explained.
+
+4.7 Eisenhower Matrix
+Four quadrants: Important/Urgent, Important/Not Urgent, Not Important/Urgent, Not Important/Not Urgent.
+
+Editable rules.
+
+Drag between quadrants + keyboard alternative.
+
+Each quadrant shows why a task is there.
+
+4.8 Habits
+Habit creation + gallery (60+ examples).
+
+Flexible check-ins, progress history.
+
+Streak visibility is opt-in. Default view: neutral language, “Resume today” action.
+
+No shame-based messaging.
+
+4.9 Countdown
+Add, customize, manage countdowns to significant dates.
+
+Notification controls per countdown.
+
+4.10 Search & filters
+Search tasks, lists, tags, filters.
+
+Task text search first; advanced filters optional.
+
+Saved filters.
+
+Search configuration can be saved as a filter.
+
+No-results state with clear recovery path.
+
+4.11 New: Review Overdue flow
+A calm, non-punitive screen for replanning:
+
+Each overdue task offers: Keep date, Reschedule, Remove planned slot, Won’t Do.
+
+Preview bulk changes before applying.
+
+Undo available.
+
+No red alarm styling. Neutral, specific language.
+
+5. ADHD-specific supports (optional, never mandatory)
+Build these as toggleable in settings — not as a separate “ADHD mode”:
+
+First-step field on every task
+
+Now list with visible reasoning
+
+Start without timer
+
+Resume cue after interruption
+
+Non-judgmental overdue review
+
+Adjustable density, motion, sound, timer visibility, reminder types
+
+Draft preservation across navigation
+
+Immediate Undo for completion and scheduling changes
+
+Plain-language previews for reminders and recurrence
+
+No silent automation of dates, priority, recurrence, or assignments
+
+6. Accessibility requirements
+Target WCAG 2.2 AA.
+
+Every action keyboard-operable, including reordering and calendar moves
+
+Visible focus indicator, logical focus order, no keyboard traps
+
+Minimum 24×24px targets; prefer larger
+
+4.5:1 contrast for text, 3:1 for non-text controls
+
+Never color-only for priority or status
+
+Persistent text labels for key actions
+
+Announce status changes accessibly (“Task completed. Undo available.”)
+
+Support zoom, text resize, text spacing, narrow screens
+
+Respect prefers-reduced-motion
+
+No timed responses required to save or edit
+
+7. Animation & interaction spec
+Motion must clarify state, not decorate.
+
+Task complete: checkbox fills, row gently collapses, Undo bar slides up
+
+Task create: row fades and slides in from Quick Add
+
+Task open: detail pane slides in from right on desktop, pushes on mobile
+
+Start action: subtle pulse on Start button, then transition to focus view
+
+Resume cue: toast slides up from bottom, dismissible
+
+Overdue review: cards fade in sequentially, no alarm animation
+
+Sidebar collapse: width transition, icons remain
+
+All motion respects reduced-motion preference
+
+8. Phased build plan
+Build in this order. Pause after each phase and show the result.
+
+Phase 1 — Shell & design system
+App shell, sidebar, navigation, tokens, dark/light theme, responsive layout.
+
+Phase 2 — Tasks core
+List view, task rows, Quick Add, task detail pane, completion, Undo, empty states.
+
+Phase 3 — Smart lists & Now
+Today, Next 7 Days, Now, Inbox, All, Completed, Won’t Do. Now list with reasoning.
+
+Phase 4 — Organization
+Lists, folders, tags, priorities, sections, group & sort, drag-and-drop with keyboard alternative.
+
+Phase 5 — Calendar & Matrix
+Week/month/year/list/agenda, Eisenhower matrix, drag reschedule, bulk postpone.
+
+Phase 6 — Focus, Habits, Countdown
+Timer-optional focus, resume cue, habits with opt-in streaks, countdowns.
+
+Phase 7 — Search, Filters, Command palette
+Search, saved filters, Ctrl/Cmd+K palette, shortcut help.
+
+Phase 8 — ADHD supports & settings
+Toggles for first-step, Now list, timer-free start, resume cue, overdue review, density, motion, sound.
+
+Phase 9 — Accessibility & polish
+Keyboard audit, screen-reader labels, focus management, reduced motion, text scaling, contrast.
+
+Phase 10 — Test scenarios
+Run and report on:
+
+Capture a vague thought while interrupted; return and find it.
+
+Choose what to work on when Today has 20 items.
+
+Start a large avoided task without a planning form.
+
+Replan several overdue tasks without losing original due dates.
+
+Distinguish a hard deadline from a tentative time block.
+
+Pause a focus session, switch contexts, resume.
+
+Recover from accidental completion or scheduling change.
+
+9. Acceptance criteria
+The prototype is done when:
+
+A user can capture a task with only a title in under 3 seconds
+
+A user can start any task in one action from the list, without opening detail
+
+A user can resume an interrupted task from a visible cue
+
+A user can replan an overdue task without shame language or forced backlog ritual
+
+Every feature in the TickTick inventory is represented or explicitly deferred
+
+Every action is keyboard-accessible
+
+Reduced-motion, text scaling, and contrast requirements pass
+
+The app looks and feels like TickTick, not a different product
+
+10. Working rules for the AI
+Preserve TickTick familiarity. Do not invent a new visual language.
+
+Distinguish evidence from hypothesis in comments. Mark unverified TickTick behavior as TODO: verify against live app.
+
+Never silently automate consequential changes.
+
+Prefer reversible actions. Always provide Undo where possible.
+
+Keep the next action obvious and the full feature set reachable.
+
+Build incrementally. Show working code at each phase.
+
+Ask before making large architectural changes.
+
+If a requirement conflicts with TickTick’s actual behavior, note the conflict and propose a resolution.
