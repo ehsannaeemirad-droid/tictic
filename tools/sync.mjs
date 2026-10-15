@@ -51,7 +51,27 @@ function sync() {
   }
 
   git('add', '-A');
-  const files = git('diff', '--cached', '--name-only').stdout.trim().split('\n').filter(Boolean);
+  const staged = git('diff', '--cached', '--name-status').stdout.trim().split('\n').filter(Boolean);
+  const files = staged.map((l) => l.split(/\t/).pop());
+
+  /* Guard against publishing scaffolding that an editor drops into the folder
+     it has open (a `.agents/` tree did get committed once this way). Only
+     additions and edits are checked — deleting such files must stay possible. */
+  const added = staged.filter((l) => !/^D\t/.test(l)).map((l) => l.split(/\t/).pop());
+  const suspects = added.filter((f) => /^\.[^/]+\//.test(f) && !/^\.github\//.test(f));
+  if (suspects.length && !args.includes('--force')) {
+    git('reset');
+    console.log(`✗ refusing to publish ${suspects.length} file(s) inside dot-directories:`);
+    for (const f of suspects.slice(0, 8)) console.log(`    ${f}${suspects.length > 8 ? '' : ''}`);
+    if (suspects.length > 8) console.log(`    … and ${suspects.length - 8} more`);
+    console.log('  tool scaffolding belongs in .gitignore. Add it there, or pass --force to publish anyway.');
+    return false;
+  }
+
+  console.log(`  staging ${files.length} file(s):`);
+  for (const f of files.slice(0, 15)) console.log(`    ${f}`);
+  if (files.length > 15) console.log(`    … and ${files.length - 15} more`);
+
   const subject = messageArg || `Sync ${files.length} file${files.length === 1 ? '' : 's'}`;
   const body = [
     subject,
