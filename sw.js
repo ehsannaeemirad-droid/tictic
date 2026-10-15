@@ -10,7 +10,7 @@
                  then does this one take over (no surprise refresh)
    Cache name carries the version, so activating deletes the previous one.
    ============================================================ */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE = `tictic-${VERSION}`;
 const PRECACHE = [
   './',
@@ -60,6 +60,8 @@ const PRECACHE = [
   './src/js/shell.js',
   './src/js/sound.js',
   './src/js/store.js',
+  './src/js/sync-merge.js',
+  './src/js/sync.js',
   './src/js/tasks.js',
   './src/js/theme-boot.js',
   './src/js/theme.js',

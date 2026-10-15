@@ -14,6 +14,7 @@ import { openBrainDump } from './relief.js';
 import { installShortcuts } from './search.js';
 import { applyAppearance } from './theme.js';
 import { installPWA } from './pwa.js';
+import { startAutoSync } from './sync.js';
 import { h } from './ui.js';
 import { artTorn } from './art.js';
 
@@ -55,6 +56,7 @@ async function start() {
     document.addEventListener('rerender', () => render());
     installShortcuts();
     installPWA();
+    startAutoSync();            /* no-op unless sync is configured + enabled */
     handleLaunchParams();
   } catch (err) {
     report(err);
