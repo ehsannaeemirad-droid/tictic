@@ -1,6 +1,10 @@
 # agent scratch space (audit scripts, reference packages, logs)
 .freebuff/
 
+# tooling scaffolding that the editor writes into whatever folder it has open
+# (agent definitions, model tiers) — not part of this app, never publish it
+.agents/
+
 # dependency folders — this repo has none by design, but never commit one
 node_modules/
 
