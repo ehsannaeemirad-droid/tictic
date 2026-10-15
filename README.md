@@ -5,8 +5,8 @@ A calm, offline-first daily planner for ADHD brains: TickTick-style lists,
 weekly timetable and a full TickTick import/export bridge. Persian (RTL,
 default) and English. Everything stays on your device.
 
-No framework, no build step, no server, no runtime third-party request.
-Clone, serve the folder, open `index.html`.
+No framework, no build step, no runtime third-party request. Clone, serve the
+folder (`npm start`), open `index.html`.
 
 ---
 
@@ -34,12 +34,18 @@ Clone, serve the folder, open `index.html`.
 ## Run it
 
 ```bash
-# any static file server works; SW needs http(s) or localhost
-python3 -m http.server 8123
+npm start                      # no install: node tools/serve.mjs
 # → http://127.0.0.1:8123/index.html
+
+npm start -- 9000              # any other port
 ```
 
-Install from the browser's "Install app" / "Add to Home Screen".
+Any static file server works — a service worker needs `http(s)` or localhost,
+which is the only reason a server is needed at all (there is no build step).
+
+Install it from the browser's "Install app" / "Add to Home Screen". On a phone,
+open the hosted URL and choose *Add to Home Screen*; after the first visit it
+runs offline and keeps its data on the device.
 
 ## Themes
 
