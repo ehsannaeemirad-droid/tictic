@@ -52,6 +52,11 @@ export const STRINGS = {
     undo: 'واگرد', done: 'انجام شد', complete: 'تکمیل', move: 'جابه‌جایی',
     settings: 'تنظیمات', search: 'جستجو', filters: 'فیلترها',
     empty_today: 'امروز هیچ کاری نیست. یک فکر اضافه کن یا از افق‌ها بردار.',
+    /* first run: one question instead of a full Today */
+    onboard_title: 'فقط یک چیز: امروز چه کاری از همه مهم‌تره؟',
+    onboard_ph: 'یک چیز را بنویس…',
+    onboard_cta: 'با همین شروع کن',
+    onboard_skip: 'فعلاً رد کن',
     /* energy */
     energy: 'انرژی', energy_normal: 'روز عادی', energy_low: 'انرژی کم',
     energy_high: 'انرژی بالا', energy_bad: 'روز خیلی بد',
@@ -204,6 +209,10 @@ now_label: 'الان', decisions_resolved: 'تصمیم‌های گرفته‌ش�
     undo: 'Undo', done: 'Done', complete: 'Complete', move: 'Move',
     settings: 'Settings', search: 'Search', filters: 'Filters',
     empty_today: 'Nothing here. Add a thought or pick from Horizons.',
+    onboard_title: "One thing: what matters most today?",
+    onboard_ph: 'Type one thing…',
+    onboard_cta: 'Start with this',
+    onboard_skip: 'Skip for now',
     energy: 'Energy', energy_normal: 'Normal', energy_low: 'Low energy',
     energy_high: 'High energy', energy_bad: 'Very bad day',
     resume_cue: 'You were working on {x} — pick it up?', resume: 'Resume', dismiss: 'Dismiss',

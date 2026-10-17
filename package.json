@@ -17,6 +17,7 @@
     "check:contrast": "node tools/contrast.mjs --all",
     "check:calendar": "node tools/calendar.mjs",
     "check:horizons": "node tools/check-horizons.mjs",
+    "check:onboard": "node tools/check-onboard.mjs",
     "check:roundtrip": "node tools/roundtrip.mjs",
     "check:css": "node tools/check-css-coverage.mjs",
     "check:usage": "node tools/check-usage.mjs",
