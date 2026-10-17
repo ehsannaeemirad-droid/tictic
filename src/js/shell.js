@@ -174,6 +174,11 @@ function buildTopbar(route) {
     tb.append(h('button', { class: 'pick', style: 'max-width:220px', onclick: () => { clearFilter(); }, title: tr('filter_clear') },
       '🩶 ' + (S.ui.savedFilterName || S.ui.filterQuery) + ' ✕'));
   }
+  if (S.ui.filterList !== 'all') {
+    const lname = (S.lists || []).find(l => l.id === S.ui.filterList)?.name || N(S.ui.filterList);
+    tb.append(h('button', { class: 'pick', style: 'max-width:220px', onclick: () => { S.ui.filterList = 'all'; commit(() => true); render(); }, title: tr('filter_clear') },
+      '🩶 ' + lname + ' ✕'));
+  }
   tb.append(h('button', { class: 'btn-icon', title: tr('settings') + ' (s)', 'aria-label': tr('settings'), onclick: () => openSettings() }, sv(icons.settings)));
 
   prevRoute = route;

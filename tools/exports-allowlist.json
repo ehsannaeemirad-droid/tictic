@@ -4,20 +4,5 @@
   "src/js/habits.js::renderHabits": "false-positive: loaded by name from the sidebar in shell.js — import('./habits.js').then(m => m.renderHabits()), which the parser reports as a dynamic site",
   "src/js/countdown.js::renderCountdowns": "false-positive: same sidebar pattern in shell.js — import('./countdown.js').then(m => m.renderCountdowns())",
   "src/js/noise.js::openNoiseHarbor": "false-positive: dynamic load from the Today card and the drawer — import('../noise.js').then(m => m.openNoiseHarbor())",
-  "src/js/tasks.js::sortKey": "false-positive: the only other mention in the tree is an unrelated local function of the same name in tools/build-sw.mjs",
-  "src/js/art.js::artEmptyList": "dead: no importer in src/, tools/, index.html or sw.js — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/art.js::artOffline": "dead: as above, no importer anywhere — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/art.js::artImport": "dead: as above, no importer anywhere — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/art.js::markArt": "dead: as above, no importer anywhere — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/components.js::priChip": "dead: no importer anywhere since the row renderer inlined its own chip — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/i18n.js::toLatinDigits": "dead: parse.js carries its own latin-digit conversion — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/i18n.js::monthName": "dead: month names come from Intl/toLocaleDateString now — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/i18n.js::fmtDateEn": "dead: as above, no importer anywhere — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/store.js::unsubscribeAll": "dead: nothing ever unsubscribes — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/store.js::childrenOf": "dead: subtask trees are read inline — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/store.js::isDescendant": "dead: the drag-and-drop it was written for was never wired — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/store.js::taskDepth": "dead: as above, only the unused DnD would have used it — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/tasks.js::effectiveListId": "dead: no importer anywhere — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/theme.js::setTheme": "dead: settings.js has its own setThemeChoice() and mutates S.settings directly — deletion pending (LAUNCH_REVIEW.md #22)",
-  "src/js/theme.js::setAccent": "dead: as above, the accent is written straight to S.settings — deletion pending (LAUNCH_REVIEW.md #22)"
+  "src/js/tasks.js::sortKey": "false-positive: the only other mention in the tree is an unrelated local function of the same name in tools/build-sw.mjs"
 }

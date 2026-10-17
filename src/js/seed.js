@@ -59,7 +59,7 @@ export function seedIfNeeded(S, { force = false } = {}) {
   }
 
   /* ================= PINNED ================= */
-  add(0, 'Mona Tasks', { pinned: true, dueDate: d(-9), listId: 'personal' });
+  add(0, 'Team A Tasks', { pinned: true, dueDate: d(-9), listId: 'personal' });
   add(0, 'BIG Picture Data', { pinned: true, dueDate: d(-9), listId: 'work' });
 
   /* ================= OVERDUE ================= */
@@ -72,18 +72,18 @@ export function seedIfNeeded(S, { force = false } = {}) {
   o('Asakiri', { listId: 'personal' });
   o('خرید هوش مصنوعی', { listId: 'personal' });
   o('Hand writing', { listId: 'personal', dopamineType: 'soso' });
-  o('مقاومت به انسولین', { listId: 'health' });
+  o('سلامت عمومی', { listId: 'health' });
   o('سایر');
-  o('قوانین احداث مدرسه هوم اسکول + هوش مصنوعی', { _day: -2, estimate: 90 });
-  o('مرادیان', { _day: -2 });
+  o('قوانین احداث مدرسه + هوش مصنوعی', { _day: -2, estimate: 90 });
+  o('خانواده', { _day: -2 });
 
   /* ================= TODAY ================= */
-  add(0, 'بانک ملی: کارت + درخواست چک', { dueDate: d(0, 8), kind: 'decision', dopamineType: 'dislike', pressureType: 'out', listId: 'personal',
+  add(0, 'بانک: کارت + درخواست چک', { dueDate: d(0, 8), kind: 'decision', dopamineType: 'dislike', pressureType: 'out', listId: 'personal',
     decision: { pros: 'چک صادر می‌شود', cons: 'صف طولانی', options: 'بروم یا نه', by: d(0, 12) } });
   add(0, 'تمیز کردن کفش و پوشاک مدرسه', { dueDate: d(0, 16), listId: 'home' });
-  add(0, 'قاب عینک سارا', { dueDate: d(0, 18), listId: 'personal' });
-  add(0, 'نوبت آزمایش', { dueDate: d(0, 21), listId: 'health' });
-  add(0, 'لیلی درس بعد', { dueDate: d(0), estimate: 45 });
+  add(0, 'قاب عینک همکار', { dueDate: d(0, 18), listId: 'personal' });
+  add(0, 'نوبت پزشک', { dueDate: d(0, 21), listId: 'health' });
+  add(0, 'دوست درس بعد', { dueDate: d(0), estimate: 45 });
   add(0, 'زیپ شلوار', { dueDate: d(0), estimate: 10, listId: 'home' });
   add(0, 'سواعدی');
   add(0, 'نهایی سازی مدرسه', { dueDate: d(0), estimate: 120, sectionId: 'sec-work' });
@@ -96,13 +96,13 @@ export function seedIfNeeded(S, { force = false } = {}) {
     'برنامه ثابت و مکتوب برای هر کلاس و پایه',
   ]) add(1, st, { dueDate: d(-1), parentId: nahaei.id, estimate: 30 });
   tasks[tasks.length - 5].dueDate = d(-1, 11);
-  /* مربیگری شطرنج — the delay-windowed task from brief §10 */
-  add(0, 'مربیگری شطرنج: ثبت‌نام', { dueDate: d(0, 18), priority: 'high', delay: dayKey(d(0, 18)),
+  /* کلاس ورزشی — the delay-windowed task from brief §10 */
+  add(0, 'کلاس ورزشی: ثبت‌نام', { dueDate: d(0, 18), priority: 'high', delay: dayKey(d(0, 18)),
     reminder: [d(-2, 9), d(-1, 9), d(0, 17)], listId: 'personal', tags: ['quick'] });
   add(0, 'Fix TV', { dueDate: d(0), estimate: 15, listId: 'home' });
-  add(0, 'فیببک لیلی', { dueDate: d(0) });
+  add(0, 'فیببک دوست', { dueDate: d(0) });
   add(0, 'اکشن لیست مالی', { dueDate: d(0), listId: 'personal', tags: ['quick'] });
-  add(0, 'قسط مسکن ۱۱ هر ماه', { dueDate: d(0), recurrence: 'monthly', listId: 'personal' });
+  add(0, 'قسط وام ۱۱ هر ماه', { dueDate: d(0), recurrence: 'monthly', listId: 'personal' });
   add(0, 'شیشه شور ماشین', { dueDate: d(0), estimate: 10, listId: 'home' });
   add(0, 'اندروید باکس', { dueDate: d(0), estimate: 45 });
 
@@ -112,15 +112,15 @@ export function seedIfNeeded(S, { force = false } = {}) {
   add(0, 'بررسی ترندهای تیک‌تاک', { noise: true, listId: 'inbox', notes: 'پارک شد — چند روز دیگر دیدم.' });
 
   /* ================= TOMORROW ================= */
-  add(0, 'Call Mona', { dueDate: d(1, 10), listId: 'personal', tags: ['quick'] });
+  add(0, 'Call Team A', { dueDate: d(1, 10), listId: 'personal', tags: ['quick'] });
   add(0, 'GROCERY SHOPPING', { dueDate: d(1, 16), recurrence: 'weekly', listId: 'home' });
-  add(0, 'سه شنبه صدرا', { dueDate: d(1) });
-  add(0, 'آمادگی لیلی', { dueDate: d(1), estimate: 30 });
+  add(0, 'سه شنبه دوست', { dueDate: d(1) });
+  add(0, 'آمادگی دوست', { dueDate: d(1), estimate: 30 });
   add(0, 'تصمیم شغل دوم', { dueDate: d(1), kind: 'decision', dopamineType: 'soso', pressureType: 'self',
-    decision: { pros: 'درآمد دوم', cons: 'زمان نهایی نمی‌ماند', options: 'داوری شطرنج درجه ۳ / skyeng', by: d(1) } });
+    decision: { pros: 'درآمد دوم', cons: 'زمان نهایی نمی‌ماند', options: 'داوری ورزشی درجه ۳ / Language class', by: d(1) } });
   const shoghl = tasks.at(-1);
-  add(1, 'تصمیم داوری شطرنج درجه ۳', { dueDate: d(1), kind: 'decision', parentId: shoghl.id });
-  add(1, 'skyeng?', { dueDate: d(1), kind: 'decision', parentId: shoghl.id });
+  add(1, 'تصمیم داوری ورزشی درجه ۳', { dueDate: d(1), kind: 'decision', parentId: shoghl.id });
+  add(1, 'Language class?', { dueDate: d(1), kind: 'decision', parentId: shoghl.id });
   add(0, 'تصحیح سوالات تعیین سطح سطوح ۴ و بالاتر + بازخورد اوتوماتیک', { dueDate: d(1), estimate: 60 });
   add(0, 'ثبت امور مالی', { dueDate: d(1), listId: 'personal' });
 
@@ -136,12 +136,12 @@ export function seedIfNeeded(S, { force = false } = {}) {
   add(0, 'Manegarial: Day Essential Tasks + Partner', { dueDate: d(3) });
   add(0, 'FRIDAY — RELATIVES 18:00–23:00', { dueDate: d(4, 18), listId: 'personal', pressureType: 'out' });
   add(0, 'شنبه و دوشنبه شیف عصر راه موفقیت', { dueDate: d(5, 13) });
-  add(0, 'صدرا - دوشنبه', { dueDate: d(7, 7) });
+  add(0, 'دوست - دوشنبه', { dueDate: d(7, 7) });
 
   /* ================= LATER ================= */
   add(0, 'راه موفقیت - شیفت صبح', { dueDate: d(12, 12) });
   add(0, 'شنبه و دوشنبه شیف صبح راه موفقیت', { dueDate: d(12) });
-  add(0, 'نت سیما', { dueDate: d(23, 18), listId: 'personal' });
+  add(0, 'نت دوست', { dueDate: d(23, 18), listId: 'personal' });
   add(0, 'یک درصد امام زمان (عج)', { dueDate: d(27, 12), listId: 'personal' });
 
   /* ================= NO DATE ================= */
@@ -175,13 +175,13 @@ export function seedIfNeeded(S, { force = false } = {}) {
   const thavani = tasks.at(-1);
   for (const st of ['1. سبک زندگی', '3. سلامت جسم', '4. سلامت روان'])
     add(1, st, { parentId: thavani.id, listId: 'personal' });
-  add(0, '1. Hitalki: About me + Video + Activate Add');
+  add(0, '1. Language class: About me + Video + Activate Add');
   add(0, '5. تکمیل اطلاعات اینستاگرام');
   add(0, 'یاداورهای مهم + تعهدات مالی', { listId: 'personal' });
   const yadav = tasks.at(-1);
-  add(1, 'بیمه شخص ثالث ماشین', { parentId: yadav.id, dueDate: d(0, 19), listId: 'personal' });
+  add(1, 'بیمه سالانه', { parentId: yadav.id, dueDate: d(0, 19), listId: 'personal' });
   add(1, 'شارژ شهرک', { parentId: yadav.id, dueDate: d(0), listId: 'personal' });
-  add(1, 'صندوق نسرین', { parentId: yadav.id, dueDate: d(10), listId: 'personal' });
+  add(1, 'صندوق ویژه', { parentId: yadav.id, dueDate: d(10), listId: 'personal' });
   add(0, 'app Art 11');
   const appArt = tasks.at(-1);
   add(1, 'برنامه تیک تیک نسخه مناسب من', { parentId: appArt.id });
@@ -194,11 +194,11 @@ export function seedIfNeeded(S, { force = false } = {}) {
 
   /* ================= COMPLETED ================= */
   const c = (title, extra = {}) => add(0, title, { status: 'done', progress: 100, dueDate: d(0), ...extra });
-  c('درخواست خروج پول های تاکی', { listId: 'personal' });
-  c('Call Mona', { dueDate: d(0, 10), listId: 'personal' });
-  c('اطلاع به سمیرا برای دوشنبه');
+  c('درخواست خروج پول های پس‌انداز', { listId: 'personal' });
+  c('Call Team A', { dueDate: d(0, 10), listId: 'personal' });
+  c('اطلاع به دوست برای دوشنبه');
   c('شنبه و دوشنبه شیف صبح راه موفقیت', { dueDate: d(0) });
-  c('یادآوری ابراهیم', { dueDate: d(0, 8) });
+  c('یادآوری دوست', { dueDate: d(0, 8) });
 
   /* cleanup: strip builder-only fields */
   for (const t of tasks) delete t._l;
@@ -244,7 +244,7 @@ export function seedIfNeeded(S, { force = false } = {}) {
 
   /* countdowns (§5.11) */
   S.countdowns = [
-    { id: uid(), name: 'قسط مسکن', date: iso(new Date(today.getTime() + 11 * DAY)), notify: true },
+    { id: uid(), name: 'قسط وام', date: iso(new Date(today.getTime() + 11 * DAY)), notify: true },
     { id: uid(), name: 'پایان اسپرینت', date: iso(new Date(today.getTime() + 14 * DAY)), notify: false },
   ];
 

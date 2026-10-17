@@ -150,7 +150,7 @@ if (findings.length || stale.length) {
 }
 /* the allowlist's composition is printed on every run: a gate whose allowlist
    is mostly dead code has to say so, not look strong because it is green */
-const byTag = {};
+const byTag = { 'false-positive': 0, dead: 0 };
 for (const [key, reason] of Object.entries(allow)) {
   const tag = String(reason).split(':')[0].trim() || 'uncategorised';
   byTag[tag] = (byTag[tag] || 0) + 1;
