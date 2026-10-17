@@ -48,6 +48,9 @@ export function seedIfNeeded(S, { force = false } = {}) {
       title, parentId: parent ? parent.id : null,
       listId: extra.listId || (parent ? parent.listId : 'work'),
       order: tasks.length,
+      /* provenance — onboarding only asks users who own no tasks of their own.
+         Set here, in the single builder every seed row passes through. */
+      demo: true,
       ...extra,
     });
     t._l = lvl;
