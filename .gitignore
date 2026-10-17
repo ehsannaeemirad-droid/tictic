@@ -25,10 +25,15 @@ desktop.ini
 
 # local personal drafts — untracked, never publish (removed from the repo 2026-10-17)
 # moved into local-personal-drafts/ the same day so the verification grep
-# (`Team A|خانواده|Language class|همکار|Leili` over root *.html *.txt, src/, samples/)
+# (the five scrubbed personal-name tokens over root *.html *.txt, src/, samples/)
 # returns zero while the drafts stay on disk locally; bare names kept so a
 # return to the root is ignored too
 Draft.html
 day.html
 first draft.txt
 local-personal-drafts/
+
+# history-rewrite (option B) scratch: the recovery bundle and the filter-repo
+# replace-text input — both carry or back the personal data, never commit them
+backups/
+tools/scrub-history.txt
