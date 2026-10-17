@@ -4,8 +4,6 @@
 import { S, commit, persist, byId, upsertTask } from './store.js';
 import { parseISO, dayKey, shiftDay, hasTimeOfDay } from './i18n.js';
 
-export function effectiveListId(t) { return t.listId || 'inbox'; }
-
 /* Horizon membership lives in horizons.js — one classifier, one convention.
    (A second copy here is how the Today view ended up rendering every overdue
    task twice: this version said `due <= today` while the view's own overdue

@@ -43,19 +43,7 @@ export function applyAppearance() {
   if (S.settings.contrast === 'more') root.dataset.contrast = 'more';
   else delete root.dataset.contrast;
 
-  paintThemeColor();
-}
-
-export function setTheme(pref) {
-  S.settings.theme = pref;
-  persist();
-  applyAppearance();
-}
-export function setAccent(accent) {
-  S.settings.accent = accent;
-  persist();
-  applyAppearance();
-}
+  paintThemeColor();}
 
 /* the browser chrome follows the palette */
 export function paintThemeColor() {

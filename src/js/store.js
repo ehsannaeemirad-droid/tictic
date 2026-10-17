@@ -139,9 +139,6 @@ export function commit(filterFn) {
 export function subscribe(fn, filter) { subs.push([filter, fn]); return () => {
   const i = subs.findIndex(([f]) => f === filter); if (i >= 0) subs.splice(i, 1);
 }; }
-export function unsubscribeAll(fn) {
-  for (let i = subs.length - 1; i >= 0; i--) if (subs[i][1] === fn) subs.splice(i, 1);
-}
 
 /* ---- helpers over tasks ---- */
 export const byId = id => S.tasks.find(t => t.id === id);
@@ -150,9 +147,6 @@ export function upsertTask(patch) {
   if (i >= 0) { S.tasks[i] = { ...S.tasks[i], ...patch, modifiedAt: Date.now() }; }
   else { S.tasks.push(makeTask(patch)); }
   commit(t => !!t.tasks);
-}
-export function childrenOf(id) {
-  return S.tasks.filter(t => t.parentId === id).sort((a, b) => a.order - b.order);
 }
 /* Delete a task AND remember it, so the deletion propagates to a synced
    device instead of the task resurrecting on the next pull. */
@@ -163,21 +157,6 @@ export function deleteTask(id) {
   S.tombstones = S.tombstones || {};
   S.tombstones[id] = Date.now();
   return true;
-}
-/* descendants guard for DnD (§33 in draft) */
-export function isDescendant(candidateId, ancestorId) {
-  let cur = byId(candidateId);
-  while (cur && cur.parentId) {
-    if (cur.parentId === ancestorId) return true;
-    cur = byId(cur.parentId);
-  }
-  return false;
-}
-/* nesting depth (max 4) */
-export function taskDepth(t) {
-  let d = 0, cur = t;
-  while (cur && cur.parentId) { d++; cur = byId(cur.parentId); }
-  return d;
 }
 
 /* Deliberate reset: leaves a genuinely empty first-run app. `__seeded` stays

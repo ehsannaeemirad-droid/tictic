@@ -4,7 +4,6 @@
    These are fixed busy-window commitments — a separate concept
    from tasks (design principle: separate commitments).
    Shown in Plan view; respect evening/morning shift toggle.
-
    Layout: the week starts Saturday (Iranian week). TODO: verify
    exact weekday name mapping.
    ============================================================ */

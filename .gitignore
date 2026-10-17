@@ -22,3 +22,8 @@ desktop.ini
 .idea/
 .vscode/
 *.swp
+
+# local personal drafts — untracked, never publish (removed from the repo 2026-10-17)
+Draft.html
+day.html
+first draft.txt

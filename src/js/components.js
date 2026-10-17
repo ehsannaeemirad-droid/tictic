@@ -90,9 +90,3 @@ export const PRIORITY = {
 };
 export const DOPAMINE = { love: '⚡', soso: '☀', dislike: '☁' };
 export const PRESSURE = { out: '🏛', self: '👤' };
-
-export function priChip(p) {
-  const P = PRIORITY[p] || PRIORITY.none;
-  return h('span', { class: 'pri-chip num', style: `color:${P.color};box-shadow:inset 0 0 0 1px ${P.color}` },
-    P.emoji || P.flag || '', ' ', tr(P.key));
-}

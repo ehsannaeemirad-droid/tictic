@@ -15,11 +15,6 @@ export function N(input) {
   return s.replace(/\d/g, d => FA_DIGITS[+d]);
 }
 
-/* Convert Persian digits back to Latin (for parsing input) */
-export function toLatinDigits(s) {
-  return String(s).replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
-}
-
 /* exported so tooling can prove both languages stay in step */
 export const STRINGS = {
   fa: {
@@ -481,7 +476,6 @@ const FA_DAYS = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنب
 const EN_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
 export function dayName(d) { return (LANG === 'fa' ? FA_DAYS : EN_DAYS)[d.getDay()]; }
-export function monthName(m) { return (LANG === 'fa' ? FA_MONTHS : EN_MONTHS)[m]; }
 
 export function fmtDate(date, { withYear = false } = {}) {
   const label = fmtDateParts(date, withYear);
@@ -496,12 +490,6 @@ function fmtDateParts(date, withYear) {
   return LANG === 'fa'
     ? `${d.getDate()} ${FA_GREG_MONTHS[d.getMonth()]}${withYear ? ' ' + d.getFullYear() : ''}`
     : `${EN_MONTHS[d.getMonth()]} ${d.getDate()}${withYear ? ', ' + d.getFullYear() : ''}`;
-}
-export function fmtDateEn(date, { withYear = false } = {}) {
-  const prev = calMode(); setCalMode('gregorian');
-  const s = fmtDateParts(date, withYear);
-  setCalMode(prev);
-  return s;
 }
 
 /* ISO yyy-mm-dd in local time */
