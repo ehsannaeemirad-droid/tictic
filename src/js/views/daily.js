@@ -5,14 +5,14 @@
    ============================================================ */
 import { S, commit, persist, byId, makeTask, deleteTask } from '../store.js';
 import { tr, N, fmtDate, dayName, parseISO, dayKey } from '../i18n.js';
-import { groupOf, todayKey, visible } from '../horizons.js';
+import { visible } from '../horizons.js';
+import { todayRenderPlan } from '../rows.js';
 import { h, sv, icons, announce, levelProgress } from '../ui.js';
 import { PRIORITY, DOPAMINE, PRESSURE, tickChip, snackbar, celebrate, sheet } from '../components.js';
-import { completeTask, uncompleteTask, doneInView } from '../tasks.js';
+import { completeTask, uncompleteTask } from '../tasks.js';
 import { openDetail } from '../detail.js';
 import { openQuickAdd } from '../quickadd.js';
 import { startFocus } from '../focus.js';
-import { computeNow } from '../now.js';
 import { matchQuery } from '../search.js';
 import { todayCommitmentStrip } from '../timetable.js';
 import { artOpenDay } from '../art.js';
@@ -27,8 +27,13 @@ export function renderToday() {
     S.ui.horizon === 'today' ? h('span', { class: 'tb-date num' }, dayName(now) + ' · ' + fmtDate(now, { withYear: false })) : h('span', {}),
   ));
 
-  const frog = S.tasks.find(t => t.priority === 'frog' && t.status === 'todo' && !t.noise);
-  if (frog && S.ui.horizon === 'today') wrap.append(frogBanner(frog));
+  /* everything this view draws comes from the render plan (rows.js), so the
+     selection is pure and importable in Node — that is what lets
+     tools/check-dom.mjs assert the element set this function will build. The
+     banner, the strip and every list row are read from the same object. */
+  const plan = todayRenderPlan(S, { matcher: matchQuery });
+  const frog = plan.banner;
+  if (frog) wrap.append(frogBanner(frog));
   if (S.ui.horizon === 'today') {
     wrap.append(energyChips());
     const behavior = energyBehaviorCard();
@@ -36,37 +41,27 @@ export function renderToday() {
   }
 
   /* Now list — a shortlist, not a second list: ≤3 items, ONE reason and one
-     action each. Computed once, before any row is drawn, because the rows it
-     lists also carry the badge. Candidates pass the same visible()/groupOf()
-     predicates as the rows below, so the strip can never show a task the list
-     has filtered out (it used to: it scored S.tasks directly). */
-  const nowItems = S.ui.horizon === 'today' ? computeNow({ matcher: matchQuery }) : [];
+     action each. Candidates pass the same visible()/groupOf() predicates as
+     the rows below, so the strip can never show a task the list has filtered
+     out (it used to: it scored S.tasks directly). */
+  const nowItems = plan.now;
   const shortlist = new Set(nowItems.map(s => s.t.id));
   if (nowItems.length) {
     wrap.append(h('div', { class: 'sec-h' }, '🧭 ' + tr('now_list')), h('div', {}, ...nowItems.map(nowRow)));
   }
 
-  /* one classifier decides each row's group, so the overdue group and the
-     horizon bucket can never both claim the same task (see horizons.js) */
-  const tk = todayKey();
-  const group = (t) => groupOf(t, S.ui.horizon, tk);
-  /* the render-set predicate lives in horizons.js now, so gates can compute the
-     rows a view draws without a DOM; the query matcher is injected because
-     search.js cannot be imported outside the browser */
-  const vis = (t) => visible(S, t, matchQuery);
-
   /* overdue */
-  const overdue = S.tasks.filter(t => vis(t) && group(t) === 'overdue');
+  const overdue = plan.overdue;
   if (overdue.length) {
     wrap.append(sectionHeader('📅 ' + tr('overdue'), N(overdue.length)), ...overdue.map(t => rowTask(t, shortlist.has(t.id))));
   }
 
   /* main bucket by horizon */
-  const bucket = S.tasks.filter(t => vis(t) && group(t) === 'bucket');
+  const bucket = plan.bucket;
   if (bucket.length) wrap.append(...bucket.map(t => rowTask(t, shortlist.has(t.id))));
 
   /* done today */
-  const done = S.tasks.filter(t => vis(t) && doneInView(t, S.ui.horizon));
+  const done = plan.done;
   if (done.length) {
     const body = h('div', {}, ...done.map(t => rowTask(t, shortlist.has(t.id))));
     const head = h('button', { class: 'sec-h', 'aria-expanded': 'false', onclick: () => {

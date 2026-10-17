@@ -87,7 +87,7 @@ stock Node 20+, no installs.
 | 15 | MINOR | Placeholder module `views/extras.js` and orphan `.wrap` rule | **FIXED** — removed |
 | 16 | MINOR | Persian-digit time tokens (`۸ صبح`) ignored | **FIXED** |
 | 17 | POLISH | Older demo rows keep the old off-by-one where seeded as plain dates | **WONTFIX** — data, not code; re-seeding corrects it |
-| 18 | MAJOR | Today view rendered **every overdue task twice** — the overdue group tested `due < today` while the horizon bucket *independently* tested `due <= today`, so past-due work passed both. 44 duplicate rows on this machine's data, 18 on the seeded demo set | **FIXED** — one classifier (`src/js/horizons.js`) gives each row exactly one group, so two predicates cannot disagree; gated by `tools/check-horizons.mjs` (567 assertions, verified to fail on the old rule) |
+| 18 | MAJOR | Today view rendered **every overdue task twice** — the overdue group tested `due < today` while the horizon bucket *independently* tested `due <= today`, so past-due work passed both. 44 duplicate rows on this machine's data, 18 on the seeded demo set | **RESOLVED** — one classifier (`src/js/horizons.js`) gives each row exactly one group, so two predicates cannot disagree; gated by `tools/check-horizons.mjs` (577 assertions, verified to fail on the old rule) **and now also at the view level by `tools/check-dom.mjs`**, which reads the element set the Today view builds and fails on any task drawn twice in the listed layer (mutation-tested by restoring the old `due <= today` bucket rule: 2/228 assertions failed, naming five duplicated ids) |
 
 ## 6. Verdict
 
@@ -120,31 +120,49 @@ rendered DOM).
 5. **TickTick bridge is file-based**; no OAuth sync (see DEFERRED.md).
 6. **Frog priority is lossy through TickTick files** (exports as High) —
    documented in README, and the JSON backup is lossless.
-7. **No gate inspects the rendered DOM.** The 12 original gates are static
-   (source, CSS, tokens, data); bug #18 was 44 perfectly valid rows drawn twice
-   and every gate was happy. It is now covered by a pure-logic gate over the
-   classifier — which is exactly why the horizon rules were moved out of the
-   view into `src/js/horizons.js`. A different view could still duplicate a row
-   through some other route; that class is only as closed as the classifier is
-   shared.
-8. **Nothing checks for unused exports.** The `usage` gate catches a *missing*
-   import; it says nothing about an export no one calls. Two such helpers
-   (`inHorizon`/`inView`) sat in `tasks.js` carrying the same inverted
-   `due <= today` convention and were found by hand during this pass, not by a
-   gate. They are removed; the class is not gated.
+7. **No gate inspected the rendered DOM — `tools/check-dom.mjs` now covers the
+   set of elements a view builds, for the Today horizon.** It is not a browser:
+   rather than fake a document, the view's selection step was moved into a pure,
+   Node-importable plan (`src/js/rows.js`) and `views/daily.js` now renders from
+   that plan, so the gate asserts exactly the element set the real view builds.
+   What it does **not** cover: appending. A view that built the right set and
+   then appended it twice would still pass. It also covers only one horizon of
+   one view; Plan, Projects, Flows, Report and the drawer are not checked, and
+   the classifier-level guard in `check-horizons.mjs` still misses any
+   duplication introduced by some other route into the DOM.
+8. **Nothing checked for unused exports — `tools/check-exports.mjs` now does,
+   with limits.** It parses export declarations and resolves every *static*
+   import specifier to a real file; the `usage` gate still only catches a
+   *missing* import. Limits: a dynamic `import('./x.js').then(ns => ns.f(…))`
+   call is not resolved to a binding, so such names are reported and must be
+   allowlisted (`tools/exports-allowlist.json`, one reason per entry, 4 entries
+   today — the sidebar loaders in shell.js, the Today noise card, and one name
+   collision with `tools/build-sw.mjs`). Name matching is textual, so an export
+   sharing a name with an unrelated local elsewhere reads as used; that
+   direction is safe — it can miss a dead export but cannot invent one. The
+   gate fails on a *stale* allowlist entry, so the list cannot rot. Its
+   allowlist also holds **15 entries for genuinely dead exports** (finding #22),
+   which the gate prints as `(4 false-positive, 15 dead)` on every run rather
+   than hiding behind a green tick.
 
 ---
 
-## Addendum — Now strip (post-review; the suite is now 16 gates)
+## Addendum — Now strip, rendered-DOM gate, unused-export gate (suite: 18 gates)
 
 Appended after the review above, so the findings are recorded rather than
 rediscovered. Counts in §1–§5 reflect the review date and are left as they were.
 
 | # | Severity | Finding | Status |
 |---|---|---|---|
-| 19 | MINOR / cosmetic | The frog renders twice on Today: `frogBanner()` draws it at the top **and** the same task is drawn again as a row in its horizon group (and in the Now strip when it is shortlisted). Both copies are valid rows — only their multiplicity is wrong | **OPEN — logged, deliberately not fixed** in the Now-strip change that found it |
+| 19 | MINOR / cosmetic | The frog rendered twice on Today: `frogBanner()` drew it at the top **and** the same task was drawn again as a row in its horizon group (and in the Now strip when shortlisted). Both copies were valid rows — only the multiplicity was wrong | **FIXED** — the view's row selection moved into `src/js/rows.js`, where the banner task is excluded from the list layer, so one task is one element: banner 1 + rows 84 + strip 3 = 88 today (before: 85 rows, frog twice). The banner is not suppressed and the row is not dimmed; the frog's single `.trow` is its strip row. Gated by `tools/check-dom.mjs` (213 assertions), which states the rule directly (`the frog is drawn as the banner AND in the bucket (#19)`) and was mutation-tested by removing the exclusion: 5/216 assertions failed, naming the duplicated id |
 | 20 | MAJOR | The Now strip scored `S.tasks` directly, so it ignored the active list/tag/section/query filters and could list tasks the view had hidden behind them. Measured on the live build with `filterList='work'`: 5 strip items, 2 of them from `personal` — phantom rows, and 49 rendered rows instead of 47 | **FIXED** — the strip is filtered by the same `visible()` predicate the rows use, capped at 3, with a total tie-break order and one reason + one action per item; each shortlisted row below carries a `now` chip. Gated by `tools/check-now.mjs` (208 assertions, verified to fail on the old scoring) and by the seeded block in `tools/check-horizons.mjs` (577 assertions; it prints the derived 85 rows = 18 overdue + 62 bucket + 5 done, plus a 3-item strip) |
-| 21 | MINOR | No UI clears `ui.filterList` once a sidebar list is chosen (`clearFilter()` resets only the text query), so a list-filtered view is stickier than it looks — and bug #20's fix makes that more visible, because the strip shrinks with it | **OPEN — logged** |
+| 21 | MINOR | No UI clears `ui.filterList` once a sidebar list is chosen (`clearFilter()` resets only the text query), so a list-filtered view is stickier than it looks — and bug #20's fix makes that more visible, because the strip shrinks with it | **OPEN — logged.** The one-line fix (render the topbar chip when `filterList !== 'all'`) is proposed as a separate commit and is NOT folded in here |
+| 22 | POLISH | 15 exports nothing imports and nothing references in their own file: `artEmptyList`, `artOffline`, `artImport`, `markArt` (art.js), `priChip` (components.js), `toLatinDigits`, `monthName`, `fmtDateEn` (i18n.js), `unsubscribeAll`, `childrenOf`, `isDescendant`, `taskDepth` (store.js), `effectiveListId`, `sortKey` (tasks.js), `setTheme`, `setAccent` (theme.js). Found by the new `tools/check-exports.mjs` on its first run | **OPEN — allowlisted in `tools/exports-allowlist.json` with a `dead:` reason each, so the gate is green and the list is honest, but the exports are still shipped.** They are harmless (no importer, no DOM, no data path) and each deletion is a separate reviewable change; deleting them was out of scope for the gate work |
+
+Two gates were added for this, both mutation-tested: `tools/check-dom.mjs` (213
+assertions — the element set of the Today view, catching #18 and #19) and
+`tools/check-exports.mjs` (zero dependencies — dead exports, with the allowlist
+categories printed on every run). The suite is 18 gates.
 
 `visible()` moved out of `views/daily.js` into `horizons.js` for #20: the view
 module imports the UI layer and cannot be imported in Node, so no gate could
@@ -153,3 +171,12 @@ compute the render set it produced. The text matcher is now injected into
 scope and importing it would have made the pure module unusable outside the
 browser. A query with no matcher supplied fails closed (hides rows) rather than
 falling open.
+
+For #18/#19 the same trick was applied to the rows themselves: the view's
+selection step now lives in `src/js/rows.js` as `todayRenderPlan()`, and
+`views/daily.js` renders that plan instead of filtering `S.tasks` itself. The
+view and the gate therefore read one function, and the plan decides the element
+set that `tools/check-dom.mjs` asserts — banner, list rows and strip together.
+The gate also derives the badge count (`|strip ∩ rows|`, 2 today) instead of
+assuming an integer, so an orphan badge fails it; that derivation caught its own
+first bug, where the banner was counted as a badge-bearing row.
