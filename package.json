@@ -18,6 +18,7 @@
     "check:calendar": "node tools/calendar.mjs",
     "check:horizons": "node tools/check-horizons.mjs",
     "check:onboard": "node tools/check-onboard.mjs",
+    "check:now": "node tools/check-now.mjs",
     "check:roundtrip": "node tools/roundtrip.mjs",
     "check:css": "node tools/check-css-coverage.mjs",
     "check:usage": "node tools/check-usage.mjs",

@@ -19,8 +19,15 @@
      4. each horizon's own list holds only the dates it claims
      5. the inbox never shows a dated task
      6. done / noise / dropped tasks belong to no horizon group
+     7. on the REAL seeded today view: no task id is rendered twice, and the
+        Now shortlist is a subset of the rows the list renders (one row per
+        task, no phantom row) — measured, never hard-coded
    ============================================================ */
-import { groupOf, inBucket, dayShift, todayKey, HORIZON_IDS } from '../src/js/horizons.js';
+import { groupOf, inBucket, dayShift, todayKey, HORIZON_IDS, visible } from '../src/js/horizons.js';
+import { S } from '../src/js/store.js';
+import { seedIfNeeded } from '../src/js/seed.js';
+import { doneInView } from '../src/js/tasks.js';
+import { computeNow, NOW_CAP } from '../src/js/now.js';
 
 const TODAY = '2026-10-15';                     /* fixed, so the run is reproducible */
 const OFFSETS = [null, -400, -3, -1, 0, 1, 2, 6, 7, 8, 400];
@@ -109,10 +116,36 @@ assert(inBucket('today', TODAY, TODAY), 'a task due today must be in the today b
 assert(inBucket('today', null, TODAY), 'an undated task must be in the today bucket (the app shows it there)');
 assert(groupOf(task(yesterday), 'today', TODAY) === 'overdue', 'a past-due task must be owned by the overdue group');
 
+/* ---- 8. the seeded Today view: the real render set -----------------------
+   The seven blocks above prove the CLASSIFIER on synthetic shapes. This one
+   proves the VIEW on the data it actually receives: which tasks the today
+   horizon draws, that none is drawn twice, and that the Now shortlist is a
+   subset of those rows rather than a list of its own. Every count is derived
+   here — a hard-coded row count would rot the day the seed data changes. */
+seedIfNeeded(S);
+S.ui.horizon = 'today';
+S.ui.filterList = 'all';
+const seededTk = todayKey();
+const shown = (t) => visible(S, t);
+const overdueSet = S.tasks.filter((t) => shown(t) && groupOf(t, 'today', seededTk) === 'overdue');
+const bucketSet = S.tasks.filter((t) => shown(t) && groupOf(t, 'today', seededTk) === 'bucket');
+const doneSet = S.tasks.filter((t) => shown(t) && doneInView(t, 'today'));
+const renderedIds = [...overdueSet, ...bucketSet, ...doneSet].map((t) => t.id);
+assert(renderedIds.length > 0, 'the seeded today view must render something');
+assert(new Set(renderedIds).size === renderedIds.length, 'a task must not be rendered twice in the today view');
+
+const mainIds = new Set([...overdueSet, ...bucketSet].map((t) => t.id));
+const doneIds = new Set(doneSet.map((t) => t.id));
+const strip = computeNow();
+assert(NOW_CAP === 3, `the strip cap must stay 3 (got ${NOW_CAP})`);
+assert(strip.length <= NOW_CAP, `the strip must respect its cap in the real view (got ${strip.length})`);
+for (const s of strip) assert(mainIds.has(s.t.id), `the Now strip shows a task no group renders: ${s.t.title}`);
+for (const s of strip) assert(!doneIds.has(s.t.id), `the Now strip shows a finished task: ${s.t.title}`);
+
 if (failed) {
   console.error(`\n  ✗ horizons      ${failed}/${checks} assertions failed`);
   for (const f of fails) console.error(`      · ${f}`);
   process.exit(1);
 }
-console.log(`${checks}/${checks} assertions · ${HORIZON_IDS.length} horizons × ${OFFSETS.length} dates · groups disjoint, past-due owned by overdue`);
+console.log(`${checks}/${checks} assertions · ${HORIZON_IDS.length} horizons × ${OFFSETS.length} dates · groups disjoint, past-due owned by overdue · seeded today view ${renderedIds.length} rows (${overdueSet.length}/${bucketSet.length}/${doneSet.length}) · strip ${strip.length}`);
 process.exit(0);

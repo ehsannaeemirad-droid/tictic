@@ -5,7 +5,7 @@
    ============================================================ */
 import { S, commit, persist, byId, makeTask, deleteTask } from '../store.js';
 import { tr, N, fmtDate, dayName, parseISO, dayKey } from '../i18n.js';
-import { groupOf, todayKey } from '../horizons.js';
+import { groupOf, todayKey, visible } from '../horizons.js';
 import { h, sv, icons, announce, levelProgress } from '../ui.js';
 import { PRIORITY, DOPAMINE, PRESSURE, tickChip, snackbar, celebrate, sheet } from '../components.js';
 import { completeTask, uncompleteTask, doneInView } from '../tasks.js';
@@ -35,33 +35,40 @@ export function renderToday() {
     if (behavior) wrap.append(behavior);
   }
 
-  /* Now list (visible reasoning) — shown on today horizon */
-  if (S.ui.horizon === 'today') {
-    const nowItems = computeNow();
-    if (nowItems.length) {
-      wrap.append(h('div', { class: 'sec-h' }, '🧭 ' + tr('now_list')), h('div', {}, nowItems.map(({ t, reasons }) => rowTask(t, reasons))));
-    }
+  /* Now list — a shortlist, not a second list: ≤3 items, ONE reason and one
+     action each. Computed once, before any row is drawn, because the rows it
+     lists also carry the badge. Candidates pass the same visible()/groupOf()
+     predicates as the rows below, so the strip can never show a task the list
+     has filtered out (it used to: it scored S.tasks directly). */
+  const nowItems = S.ui.horizon === 'today' ? computeNow({ matcher: matchQuery }) : [];
+  const shortlist = new Set(nowItems.map(s => s.t.id));
+  if (nowItems.length) {
+    wrap.append(h('div', { class: 'sec-h' }, '🧭 ' + tr('now_list')), h('div', {}, ...nowItems.map(nowRow)));
   }
 
   /* one classifier decides each row's group, so the overdue group and the
      horizon bucket can never both claim the same task (see horizons.js) */
   const tk = todayKey();
   const group = (t) => groupOf(t, S.ui.horizon, tk);
+  /* the render-set predicate lives in horizons.js now, so gates can compute the
+     rows a view draws without a DOM; the query matcher is injected because
+     search.js cannot be imported outside the browser */
+  const vis = (t) => visible(S, t, matchQuery);
 
   /* overdue */
-  const overdue = S.tasks.filter(t => visible(t) && group(t) === 'overdue');
+  const overdue = S.tasks.filter(t => vis(t) && group(t) === 'overdue');
   if (overdue.length) {
-    wrap.append(sectionHeader('📅 ' + tr('overdue'), N(overdue.length)), ...overdue.map(t => rowTask(t)));
+    wrap.append(sectionHeader('📅 ' + tr('overdue'), N(overdue.length)), ...overdue.map(t => rowTask(t, shortlist.has(t.id))));
   }
 
   /* main bucket by horizon */
-  const bucket = S.tasks.filter(t => visible(t) && group(t) === 'bucket');
-  if (bucket.length) wrap.append(...bucket.map(t => rowTask(t)));
+  const bucket = S.tasks.filter(t => vis(t) && group(t) === 'bucket');
+  if (bucket.length) wrap.append(...bucket.map(t => rowTask(t, shortlist.has(t.id))));
 
   /* done today */
-  const done = S.tasks.filter(t => visible(t) && doneInView(t, S.ui.horizon));
+  const done = S.tasks.filter(t => vis(t) && doneInView(t, S.ui.horizon));
   if (done.length) {
-    const body = h('div', {}, ...done.map(t => rowTask(t)));
+    const body = h('div', {}, ...done.map(t => rowTask(t, shortlist.has(t.id))));
     const head = h('button', { class: 'sec-h', 'aria-expanded': 'false', onclick: () => {
       const open = body.style.display !== 'none';
       body.style.display = open ? 'none' : ''; head.setAttribute('aria-expanded', String(!open));
@@ -83,16 +90,6 @@ export function renderToday() {
       h('span', { class: 'chip num' }, N(noiseCount))));
   }
   return wrap;
-}
-
-function visible(t) {
-  if (S.ui.filterList !== 'all' && t.listId !== S.ui.filterList) return false;
-  if (S.ui.sectionFilter && t.sectionId !== S.ui.sectionFilter) return false;
-  if (S.ui.tagFilter && !(t.tags || []).includes(S.ui.tagFilter)) return false;
-  if (S.ui.filterQuery && !matchQuery(t, S.ui.filterQuery)) return false;
-  if (S.ui.filterScope === 'todo' && t.status !== 'todo') return false;
-  if (t.status === 'note') return false;
-  return !t.dropped;
 }
 
 function sectionHeader(txt, count) {
@@ -186,7 +183,23 @@ function frogInView() {
   return S.tasks.find(t => t.priority === 'frog' && t.status === 'todo' && !t.noise && !t.dropped);
 }
 
-/* ---- task row — optional reasons from Now list ---- */
+/* ---- the shortlist row: one reason, one action ----------------------------
+   No tick, no star, no overflow: the strip answers "what next", and the list
+   below keeps owning the full set of actions. */
+function nowRow({ t, why }) {
+  const P = PRIORITY[t.priority] || PRIORITY.none;
+  return h('div', { class: 'trow' + (t.priority === 'frog' ? ' kfrog' : ''), style: `--pc:${P.color}` },
+    h('div', { class: 't-main' },
+      h('div', { style: 'min-width:0;flex:1' },
+        h('button', { class: 't-title', onclick: () => openDetail(t.id), title: t.title }, t.title),
+        h('span', { class: 't-reason num' }, why),
+      ),
+    ),
+    h('button', { class: 'pick on', onclick: () => startFocus(t) }, tr('start_timer')),
+  );
+}
+
+/* ---- task row — the shortlist badge comes from the Now strip ---- */
 const PRIO_ORDER = ['none', 'low', 'med', 'high', 'frog'];
 function rowKeyMove(e, task) {
   if (!e.altKey) return;
@@ -202,7 +215,7 @@ function rowKeyMove(e, task) {
   }
   if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
     const sibs = S.tasks
-      .filter(t => !t.parentId && t.status === task.status && visible(t))
+      .filter(t => !t.parentId && t.status === task.status && visible(S, t, matchQuery))
       .sort((a, b) => (a.order || 0) - (b.order || 0));
     const i = sibs.indexOf(task);
     const j = e.key === 'ArrowUp' ? i - 1 : i + 1;
@@ -214,7 +227,7 @@ function rowKeyMove(e, task) {
     e.preventDefault();
   }
 }
-function rowTask(task, reasons = []) {
+function rowTask(task, inShortlist = false) {
   const P = PRIORITY[task.priority] || PRIORITY.none;
   return h('div', {
     class: 'trow' + (task.status === 'done' ? ' done' : '') + (task.priority === 'frog' ? ' kfrog' : ''), style: `--pc:${P.color}`,
@@ -230,7 +243,7 @@ function rowTask(task, reasons = []) {
           h('span', { style: 'flex:none;font-size:14px' },
             task.dopamineType ? DOPAMINE[task.dopamineType] : '', task.pressureType ? PRESSURE[task.pressureType] : ''),
           metaChips(task),
-          reasons.length ? h('span', { class: 't-reason num' }, '← ' + reasons.join('، ')) : null,
+          inShortlist ? h('span', { class: 'chip num' }, tr('now_badge')) : null,
         ),
       ),
     ),

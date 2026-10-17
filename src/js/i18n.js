@@ -82,6 +82,7 @@ export const STRINGS = {
     removed_to: 'جابه‌جا شد به', completed_toast: 'انجام شد',
     drawer_btn: 'منو', harbor_empty: 'بندر خالی است — چیزی پارک نشده.', unpark: 'بازکردن', unpark_done: 'به امروز برگشت',
     r_frog: 'قورباغه است', r_key: 'کار کلیدی', r_overdue: 'عقب‌افتاده', r_due_today: 'سررسید امروز', r_due_tomorrow: 'سررسید فردا', r_delayed: 'تأخیر خورده',
+    r_overdue_days: '{n} روز عقب', r_next_commitment: 'بعدی: {t}', now_badge: 'الان',
     /* plan + matrix + timetable */
     week_prev: 'هفته قبل', week_next: 'هفته بعد', prev_next: 'جابه‌جایی', more: 'بیشتر', move_later: 'یک روز بعد', moved_later: 'یک روز después شد', day_x_of_y: 'روز {x} از {y}', moved: 'جابه‌جا شد', urgent: 'فوری', calm: 'بی‌عجله', matrix_kbd_hint: 'با کلیک روی کار و کلید جهت‌دار ⇦ ⇨ بین ربع‌ها جابه‌جا کن.',
     q_iu: 'مهم و فوری', q_inu: 'مهم، غیرفوری', q_niu: 'غیرمهم و فوری', q_ninu: 'غیرمهم، غیرفوری',
@@ -236,6 +237,7 @@ now_label: 'الان', decisions_resolved: 'تصمیم‌های گرفته‌ش�
     removed_to: 'Moved to', completed_toast: 'Completed',
     drawer_btn: 'Menu', harbor_empty: 'Harbor is empty — nothing parked.', unpark: 'Un-park', unpark_done: 'Restored to today',
     r_frog: 'your frog', r_key: 'key task', r_overdue: 'overdue', r_due_today: 'due today', r_due_tomorrow: 'due tomorrow', r_delayed: 'delayed',
+    r_overdue_days: 'overdue {n} days', r_next_commitment: 'up next: {t}', now_badge: 'now',
     /* plan + matrix + timetable */
     week_prev: 'Previous week', week_next: 'Next week', prev_next: 'Navigate', more: 'more', move_later: 'Move one day later', moved_later: 'Moved a day later', day_x_of_y: 'Day {x} of {y}', moved: 'Moved', urgent: 'urgent', calm: 'calm', matrix_kbd_hint: 'Focus a task and use arrow keys ⇦ ⇨ to move between quadrants.',
     q_iu: 'Important & Urgent', q_inu: 'Important, Not Urgent', q_niu: 'Not Important & Urgent', q_ninu: 'Not Important, Not Urgent',

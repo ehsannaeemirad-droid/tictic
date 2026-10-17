@@ -92,15 +92,29 @@ export function timetableSection() {
   return wrap;
 }
 
+/* today's commitments for the current shift, as [[start, end, label], …] */
+export function todayCommitmentRows() {
+  if (!S.timetable) return [];
+  const WEEK = ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri'];
+  const key = WEEK[(new Date().getDay() + 1) % 7];
+  return (S.timetable.data[currentShift()] || {})[key] || [];
+}
+
+/* the next commitment still ahead of `nowHM` (`HH:MM`), falling back to the
+   last one of the day; null when there is nothing scheduled. Exported so the
+   Today card and the Now shortlist read the same pick instead of each
+   re-deriving it — the reasoning line must not disagree with the card. */
+export function nextCommitment(rows, nowHM) {
+  if (!Array.isArray(rows) || !rows.length) return null;
+  return rows.find(([start]) => start >= nowHM) || rows[rows.length - 1] || null;
+}
+
 /* compact one-line commitment strip for the Today view */
 export function todayCommitmentStrip() {
   if (!S.timetable) return null;
-  const WEEK = ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri'];
-  const key = WEEK[(new Date().getDay() + 1) % 7];
-  const rows = (S.timetable.data[currentShift()] || {})[key] || [];
-  if (!rows.length) return null;
-  const nowHM = new Date().toTimeString().slice(0, 5);
-  const next = rows.find(([start]) => start >= nowHM) || rows[rows.length - 1];
+  const rows = todayCommitmentRows();
+  const next = nextCommitment(rows, new Date().toTimeString().slice(0, 5));
+  if (!next) return null;
   return h('button', { class: 'card', style: 'width:100%;text-align:start;padding:10px 14px;margin-block:8px;display:flex;gap:10px;align-items:center',
     onclick: () => { S.ui.route = 'plan'; commit(() => true); } },
     h('span', {}, '🕐'),

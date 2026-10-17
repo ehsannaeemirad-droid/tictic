@@ -52,6 +52,48 @@ export function groupOf(task, horizon, today = todayKey()) {
   return inBucket(horizon, due, today) ? 'bucket' : null;
 }
 
+/* Is this task part of what the current view draws at all?
+
+   This predicate used to live in views/daily.js, where nothing could reach it:
+   daily.js imports the UI layer and cannot be imported in Node, so no gate could
+   count the set of rows a view actually renders — which is exactly how the Now
+   strip came to show tasks the list below had filtered out. Kept pure here (it
+   takes the state as an argument) so tools/check-horizons.mjs can compute the
+   render set on stock Node.
+
+   The text matcher is injected rather than imported: the search module owns it,
+   that module touches the DOM at module scope, and importing it would make
+   this module unusable outside the browser (and unusable to check-horizons).
+   The caller passes it when the current state can carry a query; with a query
+   active and no matcher supplied we fail closed (hide the row), so a missing
+   matcher can never re-open the phantom-row hole. */
+export function visible(state, task, matcher = null) {
+  if (!state || !task) return false;
+  const ui = state.ui || {};
+  if (ui.filterList !== 'all' && task.listId !== ui.filterList) return false;
+  if (ui.sectionFilter && task.sectionId !== ui.sectionFilter) return false;
+  if (ui.tagFilter && !(task.tags || []).includes(ui.tagFilter)) return false;
+  if (ui.filterQuery) {
+    if (typeof matcher !== 'function') return false;
+    if (!matcher(task, ui.filterQuery)) return false;
+  }
+  if (ui.filterScope === 'todo' && task.status !== 'todo') return false;
+  if (task.status === 'note') return false;
+  return !task.dropped;
+}
+
+/* how many whole days a task is past its due date; 0 when it is not past due
+   (or has no due date). Same date-key arithmetic as dayShift: UTC math on a
+   date-only key cannot drift across a DST boundary or a positive UTC offset,
+   which is the trap that made "1 day overdue" read as "today" before. */
+export function overdueDaysOf(task, today = todayKey()) {
+  const due = dueKeyOf(task);
+  if (!due || due >= today) return 0;
+  const [dy, dm, dd] = due.split('-').map(Number);
+  const [ty, tm, td] = String(today).split('-').map(Number);
+  return Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(dy, dm - 1, dd)) / 86400000);
+}
+
 /* the horizon's own list, with the overdue set already claimed above */
 export function inBucket(horizon, due, today = todayKey()) {
   const tomorrow = dayShift(today, 1);
