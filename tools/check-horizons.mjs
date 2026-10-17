@@ -28,6 +28,7 @@ import { S } from '../src/js/store.js';
 import { seedIfNeeded } from '../src/js/seed.js';
 import { doneInView } from '../src/js/tasks.js';
 import { computeNow, NOW_CAP } from '../src/js/now.js';
+import { bannerFrog } from '../src/js/rows.js';
 
 const TODAY = '2026-10-15';                     /* fixed, so the run is reproducible */
 const OFFSETS = [null, -400, -3, -1, 0, 1, 2, 6, 7, 8, 400];
@@ -134,12 +135,16 @@ const renderedIds = [...overdueSet, ...bucketSet, ...doneSet].map((t) => t.id);
 assert(renderedIds.length > 0, 'the seeded today view must render something');
 assert(new Set(renderedIds).size === renderedIds.length, 'a task must not be rendered twice in the today view');
 
+/* the frog is drawn as the banner instead of its bucket row (#19), so for the
+   strip's "is it drawn at all?" contract the banner counts as a render site */
 const mainIds = new Set([...overdueSet, ...bucketSet].map((t) => t.id));
+const banner = bannerFrog(S);
+if (banner) mainIds.add(banner.id);
 const doneIds = new Set(doneSet.map((t) => t.id));
 const strip = computeNow();
 assert(NOW_CAP === 3, `the strip cap must stay 3 (got ${NOW_CAP})`);
 assert(strip.length <= NOW_CAP, `the strip must respect its cap in the real view (got ${strip.length})`);
-for (const s of strip) assert(mainIds.has(s.t.id), `the Now strip shows a task no group renders: ${s.t.title}`);
+for (const s of strip) assert(mainIds.has(s.t.id), `the Now strip shows a task nothing draws (no group row, no banner): ${s.t.title}`);
 for (const s of strip) assert(!doneIds.has(s.t.id), `the Now strip shows a finished task: ${s.t.title}`);
 
 if (failed) {
@@ -147,5 +152,5 @@ if (failed) {
   for (const f of fails) console.error(`      · ${f}`);
   process.exit(1);
 }
-console.log(`${checks}/${checks} assertions · ${HORIZON_IDS.length} horizons × ${OFFSETS.length} dates · groups disjoint, past-due owned by overdue · seeded today view ${renderedIds.length} rows (${overdueSet.length}/${bucketSet.length}/${doneSet.length}) · strip ${strip.length}`);
+console.log(`${checks}/${checks} assertions · ${HORIZON_IDS.length} horizons × ${OFFSETS.length} dates · groups disjoint, past-due owned by overdue · seeded classifier sets ${renderedIds.length} rows (${overdueSet.length}/${bucketSet.length}/${doneSet.length}) · strip ${strip.length} (the view replaces the banner frog's bucket row with the banner)`);
 process.exit(0);

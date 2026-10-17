@@ -20,6 +20,8 @@
      horizons      no row lands in two groups of one view (duplicate rows)
      onboard       first run asks one question, and only once
      now           the Now shortlist is capped, ordered and never a phantom row
+     dom           no task is drawn twice in the view the plan builds
+     exports       no export is dead (allowlisted with a reason where known)
      sync-merge    device sync merges without losing or resurrecting a task
 
    Exit 0 only when every gate passes.
@@ -145,6 +147,8 @@ run('roundtrip', process.execPath, ['tools/roundtrip.mjs']);
 run('horizons', process.execPath, ['tools/check-horizons.mjs']);
 run('onboard', process.execPath, ['tools/check-onboard.mjs']);
 run('now', process.execPath, ['tools/check-now.mjs']);
+run('dom', process.execPath, ['tools/check-dom.mjs']);
+run('exports', process.execPath, ['tools/check-exports.mjs']);
 run('sync-merge', process.execPath, ['tools/check-sync.mjs']);
 
 /* ---- report ------------------------------------------------------------ */
