@@ -132,3 +132,24 @@ rendered DOM).
    (`inHorizon`/`inView`) sat in `tasks.js` carrying the same inverted
    `due <= today` convention and were found by hand during this pass, not by a
    gate. They are removed; the class is not gated.
+
+---
+
+## Addendum — Now strip (post-review; the suite is now 16 gates)
+
+Appended after the review above, so the findings are recorded rather than
+rediscovered. Counts in §1–§5 reflect the review date and are left as they were.
+
+| # | Severity | Finding | Status |
+|---|---|---|---|
+| 19 | MINOR / cosmetic | The frog renders twice on Today: `frogBanner()` draws it at the top **and** the same task is drawn again as a row in its horizon group (and in the Now strip when it is shortlisted). Both copies are valid rows — only their multiplicity is wrong | **OPEN — logged, deliberately not fixed** in the Now-strip change that found it |
+| 20 | MAJOR | The Now strip scored `S.tasks` directly, so it ignored the active list/tag/section/query filters and could list tasks the view had hidden behind them. Measured on the live build with `filterList='work'`: 5 strip items, 2 of them from `personal` — phantom rows, and 49 rendered rows instead of 47 | **FIXED** — the strip is filtered by the same `visible()` predicate the rows use, capped at 3, with a total tie-break order and one reason + one action per item; each shortlisted row below carries a `now` chip. Gated by `tools/check-now.mjs` (208 assertions, verified to fail on the old scoring) and by the seeded block in `tools/check-horizons.mjs` (577 assertions; it prints the derived 85 rows = 18 overdue + 62 bucket + 5 done, plus a 3-item strip) |
+| 21 | MINOR | No UI clears `ui.filterList` once a sidebar list is chosen (`clearFilter()` resets only the text query), so a list-filtered view is stickier than it looks — and bug #20's fix makes that more visible, because the strip shrinks with it | **OPEN — logged** |
+
+`visible()` moved out of `views/daily.js` into `horizons.js` for #20: the view
+module imports the UI layer and cannot be imported in Node, so no gate could
+compute the render set it produced. The text matcher is now injected into
+`visible()` rather than imported, because `search.js` touches the DOM at module
+scope and importing it would have made the pure module unusable outside the
+browser. A query with no matcher supplied fails closed (hides rows) rather than
+falling open.

@@ -19,6 +19,7 @@
      roundtrip     TickTick export → import reproduces the data
      horizons      no row lands in two groups of one view (duplicate rows)
      onboard       first run asks one question, and only once
+     now           the Now shortlist is capped, ordered and never a phantom row
      sync-merge    device sync merges without losing or resurrecting a task
 
    Exit 0 only when every gate passes.
@@ -143,6 +144,7 @@ run('calendar', process.execPath, ['tools/calendar.mjs']);
 run('roundtrip', process.execPath, ['tools/roundtrip.mjs']);
 run('horizons', process.execPath, ['tools/check-horizons.mjs']);
 run('onboard', process.execPath, ['tools/check-onboard.mjs']);
+run('now', process.execPath, ['tools/check-now.mjs']);
 run('sync-merge', process.execPath, ['tools/check-sync.mjs']);
 
 /* ---- report ------------------------------------------------------------ */
