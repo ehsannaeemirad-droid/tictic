@@ -187,3 +187,5 @@ set that `tools/check-dom.mjs` asserts — banner, list rows and strip together.
 The gate also derives the badge count (`|strip ∩ rows|`, 2 today) instead of
 assuming an integer, so an orphan badge fails it; that derivation caught its own
 first bug, where the banner was counted as a badge-bearing row.
+
+Suite is 19 gates as of ddd14bf (18 through 1715ac7; 19 from 0fed905, the commit that landed the canary gate).
