@@ -149,7 +149,7 @@ rendered DOM).
 
 ---
 
-## Addendum — Now strip, rendered-DOM gate, unused-export gate (suite: 18 gates)
+## Addendum — Now strip, rendered-DOM gate, unused-export gate (suite: 19 gates)
 
 Appended after the review above, so the findings are recorded rather than
 rediscovered. Counts in §1–§5 reflect the review date and are left as they were.
@@ -168,7 +168,7 @@ The `check-dom` scope limitation recorded in §7 (the gate proves the *set*, not
 Two gates were added for this, both mutation-tested: `tools/check-dom.mjs` (213
 assertions — the element set of the Today view, catching #18 and #19) and
 `tools/check-exports.mjs` (zero dependencies — dead exports, with the allowlist
-categories printed on every run). The suite is 18 gates.
+categories printed on every run). The suite is 19 gates.
 
 `visible()` moved out of `views/daily.js` into `horizons.js` for #20: the view
 module imports the UI layer and cannot be imported in Node, so no gate could
