@@ -24,6 +24,7 @@
     "check:roundtrip": "node tools/roundtrip.mjs",
     "check:css": "node tools/check-css-coverage.mjs",
     "check:usage": "node tools/check-usage.mjs",
+    "check:personal": "node tools/check-no-personal.mjs",
     "build:samples": "node tools/make-samples.mjs",
     "build:icons": "python3 tools/make-icons.py",
     "build:fonts": "node tools/fetch-fonts.mjs"

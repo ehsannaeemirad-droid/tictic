@@ -13,6 +13,7 @@
      manifest      parseable, icons on disk, maskable + 192 + 512 present
      offline-url   no CDN or third-party URL in any runtime file
      console       no console.log left in the app
+     personal      no scrubbed personal token in any shipped file
      sw-precache   sw.js precache list matches the tree
      contrast      WCAG 2.2 AA across every theme × accent
      calendar      Jalali conversion vs ICU, day by day
@@ -140,6 +141,7 @@ inline('console', () => {
 });
 
 /* ---- 9–12. the heavier gates ------------------------------------------ */
+run('personal', process.execPath, ['tools/check-no-personal.mjs']);
 run('sw-precache', process.execPath, ['tools/build-sw.mjs']);
 run('contrast', process.execPath, ['tools/contrast.mjs', '--all']);
 run('calendar', process.execPath, ['tools/calendar.mjs']);
