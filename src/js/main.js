@@ -1,17 +1,17 @@
 /* ============================================================
    TicTic — entry point
-   boot (localStorage mirror + IndexedDB) → seed first launch →
+   boot (localStorage mirror + IndexedDB) → first-run sheet →
    appearance → shell → shortcuts → PWA glue.
    Anything that throws during boot lands on a readable card
    instead of a blank page.
    ============================================================ */
 import { S, boot, commit, makeTask } from './store.js';
-import { seedIfNeeded } from './seed.js';
 import { shouldShowOnboarding, buildOnboardingTask, ONBOARD_SKIP_KEY } from './onboard.js';
 import { sheet } from './components.js';
 import { setLang, setCalMode, tr } from './i18n.js';
 import { render } from './shell.js';
 import { openQuickAdd } from './quickadd.js';
+import { openImportSheet } from './ticktick.js';
 import { openBrainDump } from './relief.js';
 import { installShortcuts } from './search.js';
 import { applyAppearance } from './theme.js';
@@ -48,9 +48,10 @@ function report(err) {
 }
 
 /* ---- first run ------------------------------------------------
-   A brand-new install has seed inventory in it, so “nothing to show”
-   is not the signal — "no task of the user's own" is (onboard.js).
-   One sheet, one input, one primary button, one skip link. */
+   A fresh install ships no data, so Today is genuinely empty and the
+   first-run sheet offers three ways in: bulk import, one task, or a
+   blank start. "No task of the user's own" is still the signal that
+   decides whether to ask (onboard.js) — an existing user never sees it. */
 function onboardSkipped() {
   try { return localStorage.getItem(ONBOARD_SKIP_KEY) === '1'; } catch (e) { return false; }
 }
@@ -59,6 +60,31 @@ function markOnboarded() {
 }
 
 function openOnboarding() {
+  let sh = null;
+  /* every path retires the sheet — the flag is set before the next screen
+     opens, so a reload (or an import that takes a while) cannot re-ask */
+  const retire = () => { markOnboarded(); sh?.close(); };
+  const fromTickTick = h('button', {
+    class: 'pick pick--solid', style: 'width:100%;min-height:46px',
+    onclick: () => { retire(); openImportSheet(); },
+  }, '📥 ' + tr('import_title'));
+  const oneTask = h('button', {
+    class: 'pick pick--solid', style: 'width:100%;min-height:46px',
+    onclick: () => { retire(); openOneQuestion(); },
+  }, '➕ ' + tr('onboard_add'));
+  const blank = h('button', {
+    class: 'pick pick--quiet', style: 'width:100%',
+    onclick: retire,
+  }, tr('onboard_blank'));
+  sh = sheet(tr('onboard_title'), h('div', { style: 'display:grid;gap:10px' },
+    h('p', { style: 'margin:0;color:var(--text-muted)' }, tr('onboard_lead')),
+    fromTickTick, oneTask, blank));
+  return sh;
+}
+
+/* the one-question path: the same frog task the sheet used to ask for,
+   kept as its own step so “add one task” stays one decision */
+function openOneQuestion() {
   const input = h('input', { type: 'text', placeholder: tr('onboard_ph'), 'aria-label': tr('onboard_title'), autocomplete: 'off' });
   let sh = null;
   const submit = () => {
@@ -87,7 +113,6 @@ async function start() {
   try {
     await boot();
     applySettings();
-    if (seedIfNeeded(S)) commit(() => true);
     render();
     if (shouldShowOnboarding({ tasks: S.tasks, skipped: onboardSkipped() })) openOnboarding();
     document.addEventListener('rerender', () => render());

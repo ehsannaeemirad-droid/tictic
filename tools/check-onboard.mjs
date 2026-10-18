@@ -19,6 +19,10 @@
         gate can trust it, and seed.js marks its rows `demo: true` in exactly
         one place — if that line disappears, nobody is ever asked
      7. main.js persists the skip flag under the key onboard.js exports
+     8. boot ships no demo data (seed.js stays a gate fixture only), so a
+        fresh install's Today view is genuinely empty
+     9. the first-run sheet offers three labelled paths — import, one task,
+        blank — and every one of them sets the skip flag
    ============================================================ */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -98,6 +102,22 @@ assert(/function add\(lvl, title, extra = \{\}\)[\s\S]{0,400}demo:\s*true/.test(
 const mainSrc = read('src/js/main.js');
 assert(/setItem\(\s*ONBOARD_SKIP_KEY/.test(mainSrc), 'main.js must persist the skip flag under ONBOARD_SKIP_KEY');
 assert(/shouldShowOnboarding\(/.test(mainSrc), 'main.js must consult shouldShowOnboarding');
+
+/* ---- 8. a fresh boot ships no demo data -------------------------------- */
+assert(!/\bseedIfNeeded\s*\(/.test(mainSrc),
+  'main.js must NOT seed on boot — a fresh install has to start blank (seed.js demo rows such as "Team A Tasks" are gate fixtures only)');
+assert(!/from\s+'\.\/seed\.js'/.test(mainSrc), 'main.js must not import seed.js at all');
+
+/* ---- 9. the first-run sheet offers three paths ------------------------- */
+const paths = ['import_title', 'onboard_add', 'onboard_blank'].filter((k) => mainSrc.includes(`tr('${k}')`));
+assert(paths.length === 3,
+  'the first-run sheet must label three paths (import / one task / blank) — found ' + paths.length + (paths.length ? ': ' + paths.join(', ') : ''));
+assert(/import\s*\{[^}]*\bopenImportSheet\b[^}]*\}\s*from\s*'\.\/ticktick\.js'/.test(mainSrc),
+  'main.js must import openImportSheet from ticktick.js for the import path');
+assert(/openImportSheet\(\)/.test(mainSrc), 'the import path must open the TickTick import sheet');
+assert(/openOneQuestion\(\)|openQuickAdd\(\)/.test(mainSrc), 'the add-one-task path must open a task entry point');
+assert(/const retire = \(\) => \{ markOnboarded\(\);/.test(mainSrc),
+  'every path must set the skip flag through one retire() before handing off');
 
 if (failed) {
   console.error(`\n  ✗ onboard       ${failed}/${checks} assertions failed`);

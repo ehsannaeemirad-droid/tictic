@@ -47,6 +47,12 @@ Install it from the browser's "Install app" / "Add to Home Screen". On a phone,
 open the hosted URL and choose *Add to Home Screen*; after the first visit it
 runs offline and keeps its data on the device.
 
+## First run
+
+A fresh install starts blank. On first load you can import from TickTick, add a
+task, or start blank. Any time later: Settings → Import from TickTick for bulk
+import, Settings → Export for backup.
+
 ## Themes
 
 Settings → Appearance. Paper, Sepia, Mint · Midnight, Neon, Terminal ·
