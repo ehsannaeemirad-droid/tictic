@@ -59,6 +59,18 @@ export function parseTickDate(s) {
   const d = new Date(`${y}-${mo}-${dd}T${hh}:${mi}:${ss}${z}`);
   return isNaN(d) ? null : d.toISOString();
 }
+/** A UTC instant's calendar date as seen in `zone` (Intl, no dependencies).
+    TickTick exports all-day rows in the row's own timezone reported as UTC —
+    e.g. 2026-10-13 00:00 Asia/Tehran is written 2026-10-12T20:30:00+0000 —
+    so the date part alone is often one day early. An invalid or absent zone
+    falls back to the device's date (dayKey), i.e. the old behavior. */
+function zoneDay(iso, zone) {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      year: 'numeric', month: '2-digit', day: '2-digit', timeZone: zone || undefined
+    }).format(new Date(iso));
+  } catch { return dayKey(iso); }
+}
 const csvCell = v => {
   const s = v == null ? '' : String(v);
   return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
@@ -219,7 +231,7 @@ export function parseTickCsv(text) {
   const ix = {
     folder: col('folder name', 'folder'), list: col('list name', 'list'), title: col('title'),
     kind: col('kind'), tags: col('tags'), content: col('content'), check: col('is check list'),
-    allDay: col('is all day'),
+    allDay: col('is all day'), tz: col('timezone', 'time zone'),
     start: col('start date'), due: col('due date'), remind: col('reminder'), repeat: col('repeat'),
     prio: col('priority'), status: col('status'), created: col('created time'), completed: col('completed time'),
     order: col('order', 'sort order'), id: col('taskid'), parent: col('parentid'),
@@ -233,10 +245,20 @@ export function parseTickCsv(text) {
        stored as a plain calendar day (not the UTC instant of that midnight),
        so the date the user sees does not move when the file is re-imported or
        the machine changes time zone. */
+    const tz = ix.tz >= 0 ? (get('tz') || '').trim() : '';
     const allDay = ix.allDay >= 0
-      ? /^y(es)?$/i.test(get('allDay'))
+      ? /^(y(es)?|true|1)$/i.test(get('allDay').trim())
       : (d => !!d && new Date(d).getHours() + new Date(d).getMinutes() === 0)(parseTickDate(get('due')));
-    const day = v => { const iso = parseTickDate(v); return iso && allDay ? dayKey(iso) : iso; };
+    /* A plain "YYYY-MM-DD" due date is a zoneless calendar day — keep it
+       verbatim. A timed UTC instant on an all-day row belongs to the row's
+       own timezone, so the "day" is that date there, not the UTC date part
+       and not the device's date. */
+    const day = v => {
+      const iso = parseTickDate(v);
+      if (!iso) return iso;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+      return iso && allDay ? zoneDay(iso, tz) : iso;
+    };
     const due = day(get('due'));
     /* TickTick stores checklist rows inside Content as markdown boxes — but
        only for rows it labels as a check list (`Is check list = Y`). A plain
@@ -276,9 +298,14 @@ export function parseTickJson(text) {
   const projects = Array.isArray(j) ? [] : (j.projects || []);
   const byProj = Object.fromEntries(projects.map(p => [p.id, p.name]));
   const rows = raw.map(t => {
-    /* same rule as the CSV reader: an all-day row becomes a calendar day */
+    /* same rule as the CSV reader: an all-day row becomes the calendar day
+       of its own timezone; a plain "YYYY-MM-DD" stays verbatim */
+    const tz = t.timeZone || '';
     const allDay = t.isAllDay === true || t.isAllDay === 'true' || t.isAllDay === 'Y';
-    const day = v => { const iso = parseTickDate(v); return iso && allDay ? dayKey(iso) : iso; };
+    const day = v => { const iso = parseTickDate(v);
+      if (!iso || !allDay) return iso;
+      return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : zoneDay(iso, tz);
+    };
     return {
     id: t.id || uid(),
     parentId: t.parentId || null,

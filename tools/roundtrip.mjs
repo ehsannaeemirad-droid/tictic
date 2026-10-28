@@ -261,7 +261,7 @@ console.log('6 · date conversion and the all-day rule');
   eq('  …and the same local day', dayKey(timed.dueDate), '2026-10-13');
 }
 
-console.log('7 · TickTick v7.2 CSV — completed & abandoned are skipped by default');
+console.log('7 · TickTick v7.2 CSV — completed & abandoned skipped, all-day lands in its own timezone');
 {
   const fxPath  = path.join(root, '..', 'tools', 'fixtures', 'ticktick-v72.csv');
   ok('fixture exists', fs.existsSync(fxPath), fxPath);
@@ -270,7 +270,7 @@ console.log('7 · TickTick v7.2 CSV — completed & abandoned are skipped by def
     ok('real preamble shape (Date:/Version:/Status: legend, BOM)', text.charCodeAt(0) === 0xFEFF && text.includes('Version: 7.2') && text.includes('-1 Abandoned'));
     const parsed = parseTickCsv(text);
     ok('no parse error', !parsed.error, parsed.error);
-    eq('all 12 data rows parsed — the quoted 4-line status legend is preamble, not data', parsed.tasks.length, 12);
+    eq('all 16 data rows parsed — the quoted 4-line status legend is preamble, not data', parsed.tasks.length, 16);
     /* a repeating task exports one row per historical occurrence: same
        title, different taskIds, all Status=2 — none of it comes back in */
     const pair = parsed.tasks.filter(r => r.title === 'Read 10 pages');
@@ -280,13 +280,13 @@ console.log('7 · TickTick v7.2 CSV — completed & abandoned are skipped by def
 
     freshState();
     const pv = previewImport(parsed.tasks, { includeCompleted: false });
-    eq('would-import', pv.willImport, 6);
+    eq('would-import', pv.willImport, 10);
     eq('completed skipped', pv.skips.done, 4);
     eq('abandoned skipped', pv.skips.abandoned, 2);
     eq('duplicates', pv.skips.duplicate, 0);
     const res = applyImport(parsed.tasks, { includeCompleted: false });
-    eq('applied count', res.n, 6);
-    eq('task count after import', S.tasks.length, 6);
+    eq('applied count', res.n, 10);
+    eq('task count after import', S.tasks.length, 10);
     const leakDone = S.tasks.filter(t => ['Old project setup', 'Yearly tax 2020', 'Read 10 pages'].includes(t.title));
     ok('no completed row leaked (taskIds 2001/2002/7001/7002 by title)', leakDone.length === 0, leakDone.map(x => x.title).join(', '));
     const leakAb = S.tasks.filter(t => ['Learn chess', 'Sell the bike'].includes(t.title));
@@ -299,10 +299,20 @@ console.log('7 · TickTick v7.2 CSV — completed & abandoned are skipped by def
     eq('  multi-line Content survives verbatim', notes ? notes.notes : null, 'first line of notes\nsecond line of notes');
     ok('scientific-notation Order does not crash', !!S.tasks.find(x => x.title === 'Renew passport'));
 
+    /* — all-day rows land on the calendar day of the ROW's timezone, not the
+       UTC date part and not the device's (TickTick writes 2026-10-13 00:00
+       Asia/Tehran as 2026-10-12T20:30+0000). Exact date literals: true on
+       every device. Kiritimati (+14) is the mutation-sensitivity row — on a
+       Tehran-local dev machine the old device-day bug coincides for Tehran. */
+    eq('all-day Asia/Tehran 2026-10-12T20:30+0000 → Tehran day 2026-10-13', S.tasks.find(x => x.title === 'Nowrozi dinner')?.dueDate, '2026-10-13');
+    eq('  …and non-all-day same instant keeps its instant', dayKey(S.tasks.find(x => x.title === 'Evening call')?.dueDate), dayKey('2026-10-12T20:30:00.000Z'));
+    eq('  …all-day with no Timezone column falls back to the device day', dayKey(S.tasks.find(x => x.title === 'Pay the rent')?.dueDate), new Intl.DateTimeFormat('en-CA').format(new Date('2026-10-12T20:30:00.000Z')));
+    eq('  …all-day Pacific/Kiritimati 2026-10-12T12:00+0000 → that zone\'s day 2026-10-13', S.tasks.find(x => x.title === 'Far east call')?.dueDate, '2026-10-13');
+
     /* opting into history via the “Include completed” switch works */
     freshState();
     const pv2 = previewImport(parsed.tasks, { includeCompleted: true });
-    eq('switch on: completed rows return as importable history', pv2.willImport, 10);
+    eq('switch on: completed rows return as importable history', pv2.willImport, 14);
     eq('  abandoned still skipped with the switch on', pv2.skips.abandoned, 2);
   }
 }
