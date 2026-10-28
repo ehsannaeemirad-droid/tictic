@@ -142,7 +142,7 @@ console.log('1 · TickTick CSV — export → parse → import');
   /* import into a fresh app: ids are remapped, so compare by title */
   freshState();
   const pv = previewImport(parsed.tasks, { includeCompleted: true });
-  eq('preview: nothing skipped on a clean import', pv.skips, { empty: 0, done: 0, duplicate: 0 });
+  eq('preview: nothing skipped on a clean import', pv.skips, { empty: 0, done: 0, abandoned: 0, duplicate: 0 });
   eq('preview: willImport', pv.willImport, src.length);
   const res = applyImport(parsed.tasks, { includeCompleted: true });
   eq('applied count', res.n, src.length);
@@ -259,6 +259,52 @@ console.log('6 · date conversion and the all-day rule');
   const [timed] = exportOne(makeTask({ title: 'زمان‌دار', listId: 'inbox', dueDate: t }));
   eq('timed row → instant at the same local hour', new Date(timed.dueDate).getHours(), 8);
   eq('  …and the same local day', dayKey(timed.dueDate), '2026-10-13');
+}
+
+console.log('7 · TickTick v7.2 CSV — completed & abandoned are skipped by default');
+{
+  const fxPath  = path.join(root, '..', 'tools', 'fixtures', 'ticktick-v72.csv');
+  ok('fixture exists', fs.existsSync(fxPath), fxPath);
+  if (fs.existsSync(fxPath)) {
+    const text = fs.readFileSync(fxPath, 'utf8');
+    ok('real preamble shape (Date:/Version:/Status: legend, BOM)', text.charCodeAt(0) === 0xFEFF && text.includes('Version: 7.2') && text.includes('-1 Abandoned'));
+    const parsed = parseTickCsv(text);
+    ok('no parse error', !parsed.error, parsed.error);
+    eq('all 12 data rows parsed — the quoted 4-line status legend is preamble, not data', parsed.tasks.length, 12);
+    /* a repeating task exports one row per historical occurrence: same
+       title, different taskIds, all Status=2 — none of it comes back in */
+    const pair = parsed.tasks.filter(r => r.title === 'Read 10 pages');
+    eq('recurring history: 2 rows, same title', pair.length, 2);
+    eq('  different taskIds survive in the parse', new Set(pair.map(r => r.id)).size, 2);
+    eq('  both decode as completed', pair.every(r => r.done && !r.abandoned), true);
+
+    freshState();
+    const pv = previewImport(parsed.tasks, { includeCompleted: false });
+    eq('would-import', pv.willImport, 6);
+    eq('completed skipped', pv.skips.done, 4);
+    eq('abandoned skipped', pv.skips.abandoned, 2);
+    eq('duplicates', pv.skips.duplicate, 0);
+    const res = applyImport(parsed.tasks, { includeCompleted: false });
+    eq('applied count', res.n, 6);
+    eq('task count after import', S.tasks.length, 6);
+    const leakDone = S.tasks.filter(t => ['Old project setup', 'Yearly tax 2020', 'Read 10 pages'].includes(t.title));
+    ok('no completed row leaked (taskIds 2001/2002/7001/7002 by title)', leakDone.length === 0, leakDone.map(x => x.title).join(', '));
+    const leakAb = S.tasks.filter(t => ['Learn chess', 'Sell the bike'].includes(t.title));
+    ok('no abandoned row leaked (taskIds 8001/8002 by title)', leakAb.length === 0, leakAb.map(x => x.title).join(', '));
+
+    /* the six Normal rows arrive whole */
+    eq('priorities 0/1/3/5 decode', ['Feed the cat', 'Water plants', 'Sort emails', 'Renew passport'].map(tl => S.tasks.find(x => x.title === tl)?.priority), ['none', 'low', 'med', 'high']);
+    const notes = S.tasks.find(x => x.title === 'Sort emails');
+    ok('embedded-newline row imported', !!notes);
+    eq('  multi-line Content survives verbatim', notes ? notes.notes : null, 'first line of notes\nsecond line of notes');
+    ok('scientific-notation Order does not crash', !!S.tasks.find(x => x.title === 'Renew passport'));
+
+    /* opting into history via the “Include completed” switch works */
+    freshState();
+    const pv2 = previewImport(parsed.tasks, { includeCompleted: true });
+    eq('switch on: completed rows return as importable history', pv2.willImport, 10);
+    eq('  abandoned still skipped with the switch on', pv2.skips.abandoned, 2);
+  }
 }
 
 console.log(`\n${checks - fails}/${checks} assertions passed${fails ? ` · ${fails} FAILED` : ' · all green'}`);

@@ -1,0 +1,20 @@
+﻿"Date: 2026-10-28+0000,,,,,,"
+"Version: 7.2,,,,,,"
+"Status: 
+0 Normal
+-1 Abandoned 
+2 Completed,,,,"
+Folder Name,List Name,Title,Kind,Tags,Content,Is Check list,Start Date,Due Date,Reminder,Repeat,Priority,Status,Created Time,Completed Time,Order,Timezone,Is All Day,Is Floating,Column Name,Column Order,View Mode,taskId,parentId,projectKind
+Inbox,Inbox,Feed the cat,TEXT,,,N,,2026-11-02,,,0,0,2026-10-01T09:00:00+0000,,1700000000000000,UTC,N,N,,,list,1001,,
+Inbox,Inbox,Water plants,TEXT,"home,errand",,N,,2026-11-03,,,1,0,2026-10-01T09:00:00+0000,,1700000000000000,UTC,N,N,,,list,1002,,
+Inbox,Inbox,Sort emails,TEXT,,"first line of notes
+second line of notes",N,,2026-11-04,,,3,0,2026-10-01T09:00:00+0000,,1700000000000000,UTC,N,N,,,list,1003,,
+Inbox,Inbox,Renew passport,TEXT,,,N,,2026-11-05,,,5,0,2026-10-01T09:00:00+0000,,-8.20E+14,UTC,N,N,,,list,1004,,
+Inbox,Inbox,Call the dentist,TEXT,,,N,,2026-11-06,,,0,0,2026-10-01T09:00:00+0000,,1700000000000000,UTC,N,N,,,list,1005,,
+Inbox,Inbox,Buy stamps,TEXT,,,N,,2026-11-07,,,1,0,2026-10-01T09:00:00+0000,,1700000000000000,UTC,N,N,,,list,1006,,
+Inbox,Inbox,Old project setup,TEXT,,,N,,,,,3,2,2026-10-01T09:00:00+0000,2023-01-15T10:00:00+0000,1700000000000000,UTC,N,N,,,list,2001,,
+Inbox,Inbox,Yearly tax 2020,TEXT,,,N,,,,,undefined,2,2026-10-01T09:00:00+0000,2021-04-02T08:30:00+0000,1700000000000000,UTC,N,N,,,list,2002,,
+Inbox,Inbox,Read 10 pages,TEXT,,,N,,,,,1,2,2026-10-01T09:00:00+0000,2025-05-01T20:00:00+0000,1700000000000000,UTC,N,N,,,list,7001,,
+Inbox,Inbox,Read 10 pages,TEXT,,,N,,,,,1,2,2026-10-01T09:00:00+0000,2025-05-02T20:00:00+0000,1700000000000000,UTC,N,N,,,list,7002,,
+Inbox,Inbox,Learn chess,TEXT,,,N,,,,,undefined,-1,2026-10-01T09:00:00+0000,,1700000000000000,UTC,N,N,,,list,8001,,
+Inbox,Inbox,Sell the bike,TEXT,,,N,,,,,undefined,-1,2026-10-01T09:00:00+0000,,1700000000000000,UTC,N,N,,,list,8002,,

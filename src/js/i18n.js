@@ -177,10 +177,10 @@ now_label: 'الان', decisions_resolved: 'تصمیم‌های گرفته‌ش�
     error_reload: 'بازخوانی', loading: 'در حال بارگذاری…',
     empty_list_title: 'هنوز چیزی اینجا نیست', empty_hint_add: 'با دکمه + یا کلید n یک کار اضافه کن',
     import_preview_title: 'قبل از ورود، یک نگاه', import_counts: '{tasks} کار · {lists} لیست',
-    import_skipped: '{n} مورد رد می‌شود', import_skip_empty: 'بدون عنوان', import_skip_done: 'انجام‌شده (خاموش است)',
+    import_skipped: '{n} مورد رد می‌شود', import_skip_empty: 'بدون عنوان', import_skip_done: 'انجام‌شده (خاموش است)', import_skip_abandoned: 'رهاشده',
     import_dupes: '{n} کار تکراری پیدا شد', import_dupe_mode: 'تکراری‌ها', import_dupe_skip: 'رد کن',
     import_dupe_add: 'هر دو را نگه دار', import_more_lists: 'لیست‌های تازه: {names}', import_confirm: 'وارد کن',
-    import_skip_dupe_n: '{n} تکراری رد شد',
+    import_skip_dupe_n: '{n} تکراری رد شد', import_skip_abandoned_n: '{n} رهاشده رد شد',
 
   },
   en: {
@@ -334,10 +334,10 @@ now_label: 'Now', decisions_resolved: 'Decisions resolved', deciding_is_work: 'D
     error_reload: 'Reload', loading: 'Loading…',
     empty_list_title: 'Nothing here yet', empty_hint_add: 'Add a task with the + button or the n key',
     import_preview_title: 'A look before importing', import_counts: '{tasks} tasks · {lists} lists',
-    import_skipped: '{n} will be skipped', import_skip_empty: 'no title', import_skip_done: 'completed (switch is off)',
+    import_skipped: '{n} will be skipped', import_skip_empty: 'no title', import_skip_done: 'completed (switch is off)', import_skip_abandoned: 'abandoned',
     import_dupes: '{n} look like duplicates', import_dupe_mode: 'Duplicates', import_dupe_skip: 'Skip them',
     import_dupe_add: 'Keep both', import_more_lists: 'New lists: {names}', import_confirm: 'Import',
-    import_skip_dupe_n: '{n} duplicates skipped',
+    import_skip_dupe_n: '{n} duplicates skipped', import_skip_abandoned_n: '{n} abandoned skipped',
 
   }
 };

@@ -185,6 +185,32 @@ export function parseTickCsv(text) {
     if (cells.length >= 5 && cells.includes('title') && cells.some(c => c.startsWith('list'))) { hi = i; break; }
   }
   if (hi < 0) return { tasks: [], error: 'no_header' };
+  /* the preamble's status legend (“Status:\n0 Normal\n-1 Abandoned\n2 Completed”)
+     is the file's own decoding table: v7.1 wrote "1 Completed" while v7.2
+     writes "2 Completed" + "-1 Abandoned". Read the legend instead of
+     hard-coding either — and let it drive the completed/abandoned skip. */
+  const legend = {};
+  for (let i = 0; i < hi; i++) {
+    const first = (lines[i][0] || '').replace(/^"|"$/g, '');
+    if (!/^\s*status\s*:/i.test(first)) continue;
+    for (const ln of first.split(/\r?\n/)) {
+      const m = ln.match(/^\s*(-?\d+)\s+\S/);
+      if (m) legend[m[1]] = ln.slice(ln.indexOf(m[1])).replace(/^-?\d+\s*/, '').trim().toLowerCase();
+    }
+    break;
+  }
+  const statDec = (raw) => {
+    const lbl = legend[String(raw).trim()];
+    if (lbl !== undefined) {
+      if (/complet/.test(lbl)) return { done: true, status: 'done' };
+      if (/abandon/.test(lbl)) return { abandoned: true, dropped: true, status: 'dropped' };
+      if (/archiv/.test(lbl)) return { dropped: true, status: 'dropped' };
+      return {};                                  /* 0 Normal, or an unknown word: normal */
+    }
+    if (raw === '1') return { done: true, status: 'done' };       /* no legend: v7.1 layout */
+    if (raw === '2') return { dropped: true, status: 'dropped' };
+    return {};
+  };
   const header = lines[hi].map(s => s.trim().replace(/^"|"$/g, '').toLowerCase());
   const col = (...names) => {
     for (const n of names) { const i = header.indexOf(n); if (i >= 0) return i; }
@@ -218,14 +244,17 @@ export function parseTickCsv(text) {
     const items = [];
     const checkList = ix.check < 0 || /^y(es)?$/i.test(get('check'));
     if (checkList) for (const m of (get('content') || '').matchAll(/^[-*]\s*\[( |x|X)\]\s*(.+)$/gm)) items.push({ title: m[2].trim(), done: m[1].toLowerCase() === 'x' });
+    const st = statDec(get('status'));
     rows.push({
       id: get('id') || uid(),
       parentId: get('parent') || null,
       title: get('title'),
       notes: (checkList ? (get('content') || '').replace(/^[-*]\s*\[[ xX]\]\s*.+$/gm, '') : get('content') || '').trim(),
-      status: get('status') === '1' ? 'done' : get('status') === '2' ? 'dropped' : 'todo',
-      dropped: get('status') === '2',
-      done: get('status') === '1',
+      status: st.status || 'todo',
+      dropped: !!st.dropped,
+      done: !!st.done,
+      abandoned: !!st.abandoned,
+      statusRaw: get('status'),
       priority: PRIO_IN[get('prio')] || 'none',
       dueDate: due, plannedStart: day(get('start')), createdAt: parseTickDate(get('created')) || new Date().toISOString(),
       recurrence: REPEAT_IN[(get('repeat').match(/FREQ=(\w+)/i) || [])[1]?.toUpperCase()] || null,
@@ -324,16 +353,17 @@ export function previewImport(rows, { includeCompleted = true } = {}) {
   const existing = new Set((S.tasks || []).map(t => norm(t.title) + '|' + (dayKey(t.dueDate) || '')));
   const haveLists = new Set((S.lists || []).map(l => norm(l.name)));
   const newLists = new Map();          /* display name -> count */
-  const skips = { empty: 0, done: 0, duplicate: 0 };
+  const skips = { empty: 0, done: 0, abandoned: 0, duplicate: 0 };
   const dupes = [];
   for (const r of rows) {
     if (!r.title || !String(r.title).trim()) { skips.empty++; continue; }
+    if (r.abandoned) { skips.abandoned++; continue; }   /* abandoned history is never current work */
     if (!includeCompleted && (r.done || r.status === 'done')) { skips.done++; continue; }
     if (existing.has(dupeKey(r))) { skips.duplicate++; dupes.push(r.title); }
     const name = (r.listName || '').trim();
     if (name && !haveLists.has(norm(name))) newLists.set(name, (newLists.get(name) || 0) + 1);
   }
-  const willImport = rows.length - skips.empty - skips.done;
+  const willImport = rows.length - skips.empty - skips.done - skips.abandoned;
   return { total: rows.length, willImport, skips, dupes, newLists: [...newLists.entries()] };
 }
 
@@ -353,7 +383,7 @@ export function applyImport(rows, { includeCompleted = true, listId = null, skip
   const existing = skipDuplicates
     ? new Set((S.tasks || []).map(t => norm(t.title) + '|' + (dayKey(t.dueDate) || '')))
     : null;
-  let n = 0, skipped = 0, duplicates = 0;
+  let n = 0, skipped = 0, abandoned = 0, duplicates = 0;
   /* parents first, and keep looping for deeper chains (a child may itself
      be a parent of something imported later) */
   const pending = [...rows.filter(r => !r.parentId), ...rows.filter(r => r.parentId)];
@@ -368,6 +398,7 @@ export function applyImport(rows, { includeCompleted = true, listId = null, skip
   }
   for (const r of [...inOrder, ...pending]) {
     if (!r.title || !String(r.title).trim()) continue;
+    if (r.abandoned) { abandoned++; continue; }   /* abandoned history is never current work */
     if (!includeCompleted && (r.done || r.status === 'done')) { skipped++; continue; }
     if (existing?.has(dupeKey(r))) { duplicates++; continue; }
     const task = makeTask({
@@ -394,7 +425,7 @@ export function applyImport(rows, { includeCompleted = true, listId = null, skip
     n++;
   }
   persist(); commit(() => true);
-  return { n, skipped, duplicates };
+  return { n, skipped, abandoned, duplicates };
 }
 
 export function restoreBackup(state) {
@@ -426,7 +457,7 @@ export function openImportSheet() {
   let skipDuplicates = true;  /* the safe default: never overwrite quietly */
 
   const status = h('div', { class: 'num metric-sub' }, tr('import_none'));
-  const includeChk = h('input', { type: 'checkbox', checked: true, id: 'imp-done' });
+  const includeChk = h('input', { type: 'checkbox', checked: false, id: 'imp-done' });
   const fileInput = h('input', { type: 'file', accept: '.csv,.json,.txt,text/csv,application/json,text/plain', style: 'display:none' });
   const area = h('textarea', { rows: 5, placeholder: tr('import_paste'), 'aria-label': tr('import_paste') });
   const panel = h('div', { class: 'stack', hidden: true, style: 'padding:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-2)' });
@@ -474,6 +505,7 @@ export function openImportSheet() {
       panel.append(h('p', { class: 'num metric-sub', style: 'margin:0' }, tr('import_skipped', { n: N(skipped) }) + ' — ' + [
         pv.skips.empty ? N(pv.skips.empty) + ' · ' + tr('import_skip_empty') : '',
         pv.skips.done ? N(pv.skips.done) + ' · ' + tr('import_skip_done') : '',
+        pv.skips.abandoned ? N(pv.skips.abandoned) + ' · ' + tr('import_skip_abandoned') : '',
       ].filter(Boolean).join(' / ')));
     }
     if (pv.newLists.length) {
@@ -512,7 +544,7 @@ export function openImportSheet() {
       snackbar(tr('backup_restored'));
     } else {
       const r = applyImport(parsed.tasks, { includeCompleted: includeChk.checked, skipDuplicates });
-      snackbar(tr('import_done', { n: N(r.n) }) + (r.duplicates ? ' · ' + tr('import_skip_dupe_n', { n: N(r.duplicates) }) : ''));
+      snackbar(tr('import_done', { n: N(r.n) }) + (r.duplicates ? ' · ' + tr('import_skip_dupe_n', { n: N(r.duplicates) }) : '') + (r.abandoned ? ' · ' + tr('import_skip_abandoned_n', { n: N(r.abandoned) }) : ''));
     }
     document.querySelector('.ov-sheet')?.remove();
     document.dispatchEvent(new Event('rerender'));

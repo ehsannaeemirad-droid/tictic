@@ -84,19 +84,24 @@ Settings → Import / Export. Everything is file-based — no account, no OAuth.
 | `Start Date` / `Due Date` | `plannedStart` / `dueDate` | `Is All Day = Y` → stored as a calendar day (no timezone drift); otherwise as an instant in your local wall clock |
 | `Reminder` | `reminder` | count preserved (`TRIGGER:PT0S` placeholders) |
 | `Repeat` | `recurrence` | `RRULE:FREQ=DAILY\|WEEKLY\|MONTHLY\|YEARLY` |
-| `Status` 0/1/2 | todo / done / dropped | |
+| `Status` | todo / done / dropped · skipped | decoded from the file's own preamble legend: v7.1 (`1 Completed`, `2 Archived`) and v7.2 (`2 Completed`, `-1 Abandoned`) both read correctly. **Completed and abandoned rows are skipped by default** — tick “Include completed” to bring history back in (abandoned stays out either way) |
 | `Created Time` / `Completed Time` | `createdAt` / completion | |
 | `taskId` / `parentId` | preserved | keeps parent/child links; export→import round-trips ids |
 
 Before anything is written you get a **preview**: how many tasks and lists will
-be imported, and exactly why any row would be skipped (empty / completed /
-duplicate). Duplicates are skipped by default — never silently overwritten.
+be imported, and exactly why any row would be skipped — empty / completed /
+abandoned / duplicate, each with its own count. Completed and abandoned history
+is skipped by default: a TickTick export carries every task you ever completed
+(years-old included), and a repeating task exports one row per past occurrence.
+Duplicates are skipped by default too — nothing is silently overwritten.
 Re-importing the same file adds nothing.
 
 Samples live in [`samples/`](samples) (`ticktick-sample.csv`,
 `tictic-backup-sample.json`, `plain-text-sample.txt`), regenerated from the
 real exporters by `npm run build:samples`. The round-trip is verified by
-`tools/roundtrip.mjs`: **129/129 assertions**.
+`tools/roundtrip.mjs`: **150/150 assertions** — including a synthetic v7.2-shaped
+fixture, [`tools/fixtures/ticktick-v72.csv`](tools/fixtures/ticktick-v72.csv),
+that pins the completed/abandoned skip counts and their leak-free import.
 
 ## Verification
 
