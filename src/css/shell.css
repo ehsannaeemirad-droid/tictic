@@ -9,6 +9,10 @@
 /* ---------------- Sidebar ---------------- */
 .sidebar {
   width: var(--sidebar-w); flex: none;
+  /* stays pinned while the task list scrolls; its own overflow keeps tall
+     list sets reachable; ≤820px the sidebar is hidden (bottom nav) */
+  position: sticky; top: 0; align-self: flex-start;
+  height: 100dvh; max-height: 100dvh;
   display: flex; flex-direction: column; gap: 2px;
   padding: var(--sp-4) var(--sp-3) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
   background: var(--surface);
