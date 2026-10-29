@@ -150,6 +150,7 @@ run('horizons', process.execPath, ['tools/check-horizons.mjs']);
 run('onboard', process.execPath, ['tools/check-onboard.mjs']);
 run('now', process.execPath, ['tools/check-now.mjs']);
 run('dom', process.execPath, ['tools/check-dom.mjs']);
+run('sort', process.execPath, ['tools/check-sort.mjs']);
 run('exports', process.execPath, ['tools/check-exports.mjs']);
 run('sync-merge', process.execPath, ['tools/check-sync.mjs']);
 

@@ -31,7 +31,7 @@ export const S = {
   lighthouse: { beam: true, frogGlow: true, foghorn: false },
   timetable: null, /* filled on seed: our shift timetable */
   collapseState: {},
-  ui: { route: 'today', horizon: 'today', filterList: 'all', drawerOpen: false },
+  ui: { route: 'today', horizon: 'today', filterList: 'all', drawerOpen: false, sort: null },
   /* transient (not persisted) */
   activeSession: null,
 };
@@ -60,7 +60,7 @@ export function makeTask(patch = {}) {
 /* ---- persistence ---- */
 export function serialize() {
   const { ui, activeSession, ...persisted } = S;   /* ui persisted minus transient bits below */
-  return { ...persisted, ui: { route: S.ui.route, horizon: S.ui.horizon, filterList: S.ui.filterList }, v: 1 };
+  return { ...persisted, ui: { route: S.ui.route, horizon: S.ui.horizon, filterList: S.ui.filterList, sort: S.ui.sort }, v: 1 };
 }
 
 export function persist() {

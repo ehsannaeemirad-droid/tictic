@@ -29,6 +29,10 @@ export const STRINGS = {
     overdue: 'عقب‌افتاده', dropped: 'رهاشده', done_today: 'امروز غرق شدیم',
     noise_harbor: 'بندر نویز', parked_items: 'موارد پارک‌شده',
     sections: 'بخش‌ها', tags: 'تگ‌ها', lists: 'لیست‌ها',
+    /* sort menu (item 8) */
+    sort_by: 'مرتب‌سازی', sort_due: 'سررسید', sort_priority: 'اهمیت',
+    sort_title: 'عنوان', sort_list: 'لیست', sort_estimate: 'زمان تخمینی',
+    sort_created: 'زمان ساخت', sort_asc: 'صعودی', sort_desc: 'نزولی',
     /* task */
     add_task: 'افزودن کار', quick_add_ph: 'یک فکر… Enter = ذخیره',
     task: 'کار', subtasks: 'زیرکارها', check_items: 'چک‌آیتم‌ها',
@@ -194,6 +198,10 @@ now_label: 'الان', decisions_resolved: 'تصمیم‌های گرفته‌ش�
     overdue: 'Overdue', dropped: 'Dropped', done_today: 'Done today',
     noise_harbor: 'Noise Harbor', parked_items: 'parked',
     sections: 'Sections', tags: 'Tags', lists: 'Lists',
+    /* sort menu (item 8) */
+    sort_by: 'Sort', sort_due: 'Due date', sort_priority: 'Priority',
+    sort_title: 'Title', sort_list: 'List', sort_estimate: 'Estimate',
+    sort_created: 'Created time', sort_asc: 'Ascending', sort_desc: 'Descending',
     add_task: 'Add task', quick_add_ph: 'One thought… Enter = save',
     task: 'Task', subtasks: 'Subtasks', check_items: 'Check items',
     due: 'Due', planned_start: 'Planned start', estimate: 'Estimate',

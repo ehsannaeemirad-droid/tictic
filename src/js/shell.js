@@ -18,6 +18,8 @@ import { renderReport } from './report.js';
 import { openSettings } from './settings.js';
 import { openSearch, openPalette, clearFilter, applyFilter } from './search.js';
 import { openBrainDump, openBreathe, openEnergySheet, ENERGY_MODES } from './relief.js';
+import { sheet } from './components.js';
+import { SORT_KEYS } from './rows.js';
 
 export const NAV = [
   { id: 'today', labelKey: 'nav_today', icon: icons.today },
@@ -186,6 +188,55 @@ function moduleSheet(title, renderFn) {
   });
 }
 
+/* item 8 — sort menu sheet: two ordered keys, each with a direction toggle.
+   Written straight to S.ui.sort and persisted via commit → render. */
+function openSortMenu() {
+  const cfg = S.ui.sort || { primary: 'due', primaryDir: 'asc', secondary: null, secondaryDir: 'asc' };
+  const st = { ...cfg };               /* live draft until Apply */
+  const dirBtn = () => {
+    const b = h('button', {
+      class: 'btn-icon',
+      onclick: () => {
+        st[dirBtn.which + 'Dir'] = st[dirBtn.which + 'Dir'] === 'asc' ? 'desc' : 'asc';
+        b.textContent = st[dirBtn.which + 'Dir'] === 'desc' ? '↓' : '↑';
+        b.setAttribute('aria-label', tr(st[dirBtn.which + 'Dir'] === 'desc' ? 'sort_desc' : 'sort_asc'));
+      },
+    });
+    b.set = (which) => {
+      dirBtn.which = which;
+      b.textContent = st[which + 'Dir'] === 'desc' ? '↓' : '↑';
+      b.setAttribute('aria-label', tr(st[which + 'Dir'] === 'desc' ? 'sort_desc' : 'sort_asc'));
+    };
+    return b;
+  };
+  const row = (which, allowNone) => {
+    const keys = allowNone ? ['none', ...SORT_KEYS] : SORT_KEYS;
+    const a = dirBtn();
+    const sel = h('select', { style: 'flex:1;min-height:36px', 'aria-label': tr('sort_by'),
+      onchange: (e) => { const v = e.target.value; st[which] = v === 'none' ? null : v; a.set(which); } },
+      ...keys.map(k => h('option', { value: k, selected: (st[which] || 'none') === k ? 'selected' : null },
+        k === 'none' ? '—' : tr('sort_' + k))))
+    ;
+    a.set(which);
+    return h('div', { class: 'chips-row', style: 'margin-block:6px' }, sel, a);
+  };
+  const s = sheet(tr('sort_by'),
+    h('div', { style: 'min-width:260px' },
+      row('primary', false),
+      row('secondary', true),
+      h('div', { class: 'chips-row', style: 'margin-top:10px' },
+        h('button', { class: 'pick', style: 'padding:8px 14px', onclick: () => {
+          S.ui.sort = st.primary ? st : null; commit(() => true); render();
+          s.close();
+        } }, tr('common.apply')),
+        h('button', { class: 'pick', style: 'padding:8px 14px', onclick: () => {
+          S.ui.sort = null; commit(() => true); render();
+          s.close();
+        } }, '✕ ' + tr('filter_clear')),
+      )), {});
+  return s;
+}
+
 function buildTopbar(route) {
   const tb = h('header', { class: 'topbar' });
   if (route === 'today' && S.ui.horizon === 'today') { 
@@ -216,6 +267,16 @@ function buildTopbar(route) {
     tb.append(h('button', { class: 'pick', style: 'max-width:220px', onclick: () => { S.ui.filterList = 'all'; commit(() => true); render(); }, title: tr('filter_clear') },
       '🩶 ' + lname + ' ✕'));
   }
+  /* item 8 — the sort menu (Today route only) */
+  if (route === 'today') {
+    const sc = S.ui.sort;
+    tb.append(h('button', {
+      class: 'btn-icon', title: tr('sort_by'), 'aria-label': tr('sort_by'),
+      onclick: () => openSortMenu(),
+      style: sc ? 'color:var(--accent)' : '',
+    }, sc ? '⇅' : '↕'));
+  }
+
   tb.append(h('button', { class: 'btn-icon', title: tr('settings') + ' (s)', 'aria-label': tr('settings'), onclick: () => openSettings() }, sv(icons.settings)));
 
   prevRoute = route;
