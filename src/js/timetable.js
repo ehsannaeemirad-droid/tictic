@@ -39,7 +39,11 @@ const DAYS_EN = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursd
 export function currentShift() { return S.timetable?.shift || 'morning'; }
 
 export function timetableSection() {
-  if (!S.timetable) S.timetable = { shift: 'morning', data: DEFAULT_TIMETABLE };
+  /* user-owned: reset leaves the timetable empty — the sample commitments only
+     come back via the explicit “Load sample data” action (seed.js). The old
+     auto-resurrect here re-materialized DEFAULT_TIMETABLE (e.g. the Thursday
+     17:00 کلاس گروهی row) right after the user wiped the app. */
+  if (!S.timetable) S.timetable = { shift: 'morning', data: {} };
   const shift = currentShift();
   const wrap = h('div', {});
   wrap.append(h('div', { class: 'sec-h', style: 'margin-top:24px' }, '🕐 ' + tr('timetable')));
@@ -60,7 +64,7 @@ export function timetableSection() {
 
   const grid = h('div', { class: 'tt-grid' });
   WEEK.forEach((key, i) => {
-    const rows = S.timetable.data[shift][key] || [];
+    const rows = (S.timetable.data?.[shift] || {})[key] || [];
     const isToday = key === todayKey;
     const card = h('div', { class: 'card tt-day' + (isToday ? ' today' : '') },
       h('div', { class: 'tt-dayname' }, names[i], isToday ? h('span', { class: 'chip', style: 'margin-inline-start:6px' }, tr('today')) : null),
@@ -76,7 +80,7 @@ export function timetableSection() {
   wrap.append(grid);
 
   /* today's list, big and tappable, under the grid */
-  const todayRows = S.timetable.data[shift][todayKey] || [];
+  const todayRows = (S.timetable.data?.[shift] || {})[todayKey] || [];
   wrap.append(h('div', { class: 'sec-h', style: 'margin-top:10px' }, '⭐ ' + tr('today')));
   if (!todayRows.length) {
     wrap.append(h('div', { class: 'card', style: 'padding:14px;color:var(--text-muted);text-align:center' }, tr('no_commitments_today')));
