@@ -165,6 +165,9 @@ button.chip.on { background: var(--accent-soft); color: var(--accent); }
   border-radius: var(--r-pill); background: var(--accent); opacity: .8;
 }
 .sec-h:hover { color: var(--text-2); }
+/* the collapse chevron (item 3) — a fixed-width slot so folding never
+   shifts the heading text */
+.sec-chev { flex: none; width: 12px; color: var(--accent); opacity: .8; }
 
 .detail-label {
   font-size: var(--fs-xs); font-weight: var(--fw-black);

@@ -47,28 +47,30 @@ export function renderToday() {
   const nowItems = plan.now;
   const shortlist = new Set(nowItems.map(s => s.t.id));
   if (nowItems.length) {
-    wrap.append(h('div', { class: 'sec-h' }, '🧭 ' + tr('now_list')), h('div', {}, ...nowItems.map(nowRow)));
+    const nowSec = collapsibleSection('now', '🧭 ' + tr('now_list'));
+    nowSec.body.append(...nowItems.map(nowRow));
+    wrap.append(nowSec.head, nowSec.body);
   }
 
   /* overdue */
   const overdue = plan.overdue;
   if (overdue.length) {
-    wrap.append(sectionHeader('📅 ' + tr('overdue'), N(overdue.length)), ...overdue.map(t => rowTask(t, shortlist.has(t.id))));
+    const odSec = collapsibleSection('overdue', '📅 ' + tr('overdue'),
+      h('span', { class: 'chip num', style: 'margin-inline-start:6px' }, N(overdue.length)));
+    odSec.body.append(...overdue.map(t => rowTask(t, shortlist.has(t.id))));
+    wrap.append(odSec.head, odSec.body);
   }
 
   /* main bucket by horizon */
   const bucket = plan.bucket;
   if (bucket.length) wrap.append(...bucket.map(t => rowTask(t, shortlist.has(t.id))));
 
-  /* done today */
+  /* done today — collapsible, remembered across reloads in S.collapseState */
   const done = plan.done;
   if (done.length) {
-    const body = h('div', {}, ...done.map(t => rowTask(t, shortlist.has(t.id))));
-    const head = h('button', { class: 'sec-h', 'aria-expanded': 'false', onclick: () => {
-      const open = body.style.display !== 'none';
-      body.style.display = open ? 'none' : ''; head.setAttribute('aria-expanded', String(!open));
-    } }, '✅ ' + tr('done_today') + ' · ' + N(done.length));
-    wrap.append(head, body);
+    const dnSec = collapsibleSection('done_today', '✅ ' + tr('done_today') + ' · ' + N(done.length));
+    dnSec.body.append(...done.map(t => rowTask(t, shortlist.has(t.id))));
+    wrap.append(dnSec.head, dnSec.body);
   }
 
   if (!frog && !overdue.length && !bucket.length && !done.length) wrap.append(emptyState());
@@ -85,6 +87,29 @@ export function renderToday() {
       h('span', { class: 'chip num' }, N(noiseCount))));
   }
   return wrap;
+}
+
+/* section header with a collapse chevron (item 3). State lives in
+   S.collapseState[name] — persisted with the rest of S — so a section the
+   user folded stays folded after a reload and on a synced device. */
+function collapsibleSection(name, ...headNodes) {
+  const state = S.collapseState = S.collapseState || {};
+  const collapsed = !!state[name];
+  const body = h('div', {});
+  const chev = h('span', { class: 'sec-chev', 'aria-hidden': 'true' }, collapsed ? '▸' : '▾');
+  const head = h('button', {
+    class: 'sec-h',
+    'aria-expanded': String(!collapsed),
+    onclick: () => {
+      const nowCollapsed = !state[name];
+      state[name] = nowCollapsed; persist();
+      body.style.display = nowCollapsed ? 'none' : '';
+      head.setAttribute('aria-expanded', String(!nowCollapsed));
+      chev.textContent = nowCollapsed ? '▸' : '▾';
+    },
+  }, chev, ...headNodes);
+  if (collapsed) body.style.display = 'none';
+  return { head, body };
 }
 
 function sectionHeader(txt, count) {
