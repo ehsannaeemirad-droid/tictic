@@ -5,7 +5,7 @@
    ============================================================ */
 import { S, commit, persist, byId, makeTask, deleteTask } from '../store.js';
 import { tr, N, fmtDate, dayName, parseISO, dayKey } from '../i18n.js';
-import { visible } from '../horizons.js';
+import { visible, todayKey } from '../horizons.js';
 import { todayRenderPlan } from '../rows.js';
 import { h, sv, icons, announce, levelProgress } from '../ui.js';
 import { PRIORITY, DOPAMINE, PRESSURE, tickChip, snackbar, celebrate, sheet } from '../components.js';
@@ -284,6 +284,18 @@ function metaChips(task) {
   if (task.delay) bits.push('⏳' + N(fmtDate(parseISO(dayKey(task.delay)))));
   if (task.reminders?.length) bits.push('🔔' + N(task.reminders.length));
   if (task.kind === 'decision') bits.push('？' + tr('decide'));
+  /* item 4 — inline metadata: due chip, first 2 tags (+N), list name */
+  const due = task.dueDate ? dayKey(task.dueDate) : null;
+  if (due) bits.push('📅 ' + (due === todayKey()
+    ? tr('today')
+    : N(fmtDate(parseISO(due), { withYear: false }))));
+  const tags = task.tags || [];
+  if (tags.length) bits.push('🏷 ' + tags.slice(0, 2).map(tg => '#' + tg).join(' ')
+    + (tags.length > 2 ? ' +' + N(tags.length - 2) : ''));
+  if (S.ui.filterList === 'all' && task.listId && task.listId !== 'inbox') {
+    const ln = (S.lists || []).find(l => l.id === task.listId)?.name;
+    if (ln) bits.push('🗂 ' + ln);
+  }
   if (!bits.length) return h('span', {});
   return h('span', { class: 't-meta num' }, bits.join(' · '));
 }
