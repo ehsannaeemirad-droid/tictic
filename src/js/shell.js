@@ -5,7 +5,8 @@
    the Today view has a real skeleton right now.
    ============================================================ */
 import { S, commit, subscribe } from './store.js';
-import { tr, N, fmtDate, setLang } from './i18n.js';
+import { tr, N, fmtDate, setLang, dayKey } from './i18n.js';
+import { inBucket, todayKey } from './horizons.js';
 import { h, clear, sv, icons, levelProgress, announce } from './ui.js';
 import { renderToday, rerenderToday as rerender } from './views/daily.js';
 import { openQuickAdd } from './quickadd.js';
@@ -24,6 +25,13 @@ export const NAV = [
   { id: 'projects', labelKey: 'nav_projects', icon: icons.projects },
   { id: 'flows', labelKey: 'nav_flows', icon: icons.flows },
   { id: 'report', labelKey: 'nav_report', icon: icons.report },
+];
+
+/* horizon shortcuts that live on the Today route (item 2) — not routes
+   themselves; clicking one switches S.ui.horizon and renders Today */
+const HORIZON_NAV = [
+  { id: 'tomorrow', labelKey: 'tomorrow', icon: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM9 13l3 3 3-3' },
+  { id: 'next7', labelKey: 'next_7_days', icon: 'M5 6l6 6-6 6M13 6l6 6-6 6' },
 ];
 
 let prevRoute = 'today';/* routes */
@@ -62,17 +70,46 @@ function buildSidebar(route) {
     h('span', {}, tr('app_name')));
   sb.append(brand);
 
-  const tasksCount = S.tasks.filter(t => t.status === 'todo' && !t.noise).length;
-  for (const n of NAV) {
-    const count = n.id === 'today' ? N(tasksCount) : '';
-    const item = h('button', {
-      class: 'sb-item' + (route === n.id ? ' active' : ''),
+  const tk = todayKey();
+  const keyOf = t => (t.dueDate ? dayKey(t.dueDate) : null);
+  const horizonCount = hz => S.tasks.filter(t =>
+    t.status === 'todo' && !t.noise && inBucket(hz, keyOf(t), tk)).length;
+
+  /* today route entry — badge now counted by the SAME horizon logic the view
+     uses, instead of every open task, so it can't say 127 over a 5-row view */
+  {
+    const n = NAV[0];
+    sb.append(h('button', {
+      class: 'sb-item' + (S.ui.route === n.id ? ' active' : ''),
       onclick: () => setRoute(n.id),
-      'aria-current': route === n.id ? 'page' : null,
+      'aria-current': S.ui.route === n.id ? 'page' : null,
     },
       sv(n.icon),
       h('span', { class: 'sb-label' }, tr(n.labelKey)),
-      count ? h('span', { class: 'count' }, count) : null,
+      h('span', { class: 'count' }, N(horizonCount('today'))),
+    ));
+  }
+  /* horizon shortcuts between Today and Plan (item 2) */
+  for (const hz of HORIZON_NAV) {
+    const active = S.ui.route === 'today' && S.ui.horizon === hz.id;
+    sb.append(h('button', {
+      class: 'sb-item' + (active ? ' active' : ''),
+      onclick: () => { S.ui.horizon = hz.id; S.ui.route = 'today'; commit(() => true); render(); },
+      'aria-current': active ? 'page' : null,
+    },
+      sv(hz.icon),
+      h('span', { class: 'sb-label' }, tr(hz.labelKey)),
+      h('span', { class: 'count' }, N(horizonCount(hz.id))),
+    ));
+  }
+  for (const n of NAV.slice(1)) {
+    const item = h('button', {
+      class: 'sb-item' + (S.ui.route === n.id ? ' active' : ''),
+      onclick: () => setRoute(n.id),
+      'aria-current': S.ui.route === n.id ? 'page' : null,
+    },
+      sv(n.icon),
+      h('span', { class: 'sb-label' }, tr(n.labelKey)),
     );
     sb.append(item);
   }
