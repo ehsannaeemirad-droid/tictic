@@ -33,6 +33,10 @@ export const STRINGS = {
     sort_by: 'مرتب‌سازی', sort_due: 'سررسید', sort_priority: 'اهمیت',
     sort_title: 'عنوان', sort_list: 'لیست', sort_estimate: 'زمان تخمینی',
     sort_created: 'زمان ساخت', sort_asc: 'صعودی', sort_desc: 'نزولی',
+    /* task types (item 9) */
+    type_label: 'نوع کار',
+    type_mover: 'پیشران', type_responsibility: 'تعهد',
+    type_organizer: 'روتین', type_nice: 'اگه فرصت شد',
     /* task */
     add_task: 'افزودن کار', quick_add_ph: 'یک فکر… Enter = ذخیره',
     task: 'کار', subtasks: 'زیرکارها', check_items: 'چک‌آیتم‌ها',
@@ -202,6 +206,10 @@ now_label: 'الان', decisions_resolved: 'تصمیم‌های گرفته‌ش�
     sort_by: 'Sort', sort_due: 'Due date', sort_priority: 'Priority',
     sort_title: 'Title', sort_list: 'List', sort_estimate: 'Estimate',
     sort_created: 'Created time', sort_asc: 'Ascending', sort_desc: 'Descending',
+    /* task types (item 9) */
+    type_label: 'Task type',
+    type_mover: 'Mover', type_responsibility: 'Responsibility',
+    type_organizer: 'Organizer', type_nice: 'Nice to do',
     add_task: 'Add task', quick_add_ph: 'One thought… Enter = save',
     task: 'Task', subtasks: 'Subtasks', check_items: 'Check items',
     due: 'Due', planned_start: 'Planned start', estimate: 'Estimate',

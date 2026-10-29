@@ -22,7 +22,7 @@
      completedTime,sortOrder,items[{id,status,title}]}
    JSON status: 0 normal · 2 completed (item status: 0/1)
    ============================================================ */
-import { S, commit, persist, uid, makeTask, serialize } from './store.js';
+import { S, commit, persist, uid, makeTask, serialize, normalizeType } from './store.js';
 import { tr, N, dayKey } from './i18n.js';
 import { h, announce } from './ui.js';
 import { sheet, snackbar } from './components.js';
@@ -267,6 +267,18 @@ export function parseTickCsv(text) {
     const checkList = ix.check < 0 || /^y(es)?$/i.test(get('check'));
     if (checkList) for (const m of (get('content') || '').matchAll(/^[-*]\s*\[( |x|X)\]\s*(.+)$/gm)) items.push({ title: m[2].trim(), done: m[1].toLowerCase() === 'x' });
     const st = statDec(get('status'));
+    /* item 9 — TickTick exports carry no type column, so a row's type is a
+       heuristic, never a guess at user intent: a repeat rule → organizer;
+       no due date and no priority → nice-to-do; everything else stays the
+       backward-compatible responsibility. Movers require user intent and are
+       NEVER assigned by heuristic. */
+    const importType = (() => {
+      const recur = REPEAT_IN[(get('repeat').match(/FREQ=(\w+)/i) || [])[1]?.toUpperCase()] || null;
+      if (recur) return 'organizer';
+      const hasDue = !!due;
+      const hasPrio = !!PRIO_IN[get('prio')];
+      return (!hasDue && !hasPrio) ? 'nice' : 'responsibility';
+    })();
     rows.push({
       id: get('id') || uid(),
       parentId: get('parent') || null,
@@ -283,6 +295,7 @@ export function parseTickCsv(text) {
       tags: get('tags') ? get('tags').split(',').map(s => s.trim()).filter(Boolean) : [],
       listName: get('list'), folderName: get('folder'),
       kind: get('kind') === 'NOTE' ? 'note' : 'action',
+      type: importType,
       subtasks: items,
     });
   }
@@ -439,6 +452,7 @@ export function applyImport(rows, { includeCompleted = true, listId = null, skip
       plannedStart: r.plannedStart || null,
       recurrence: r.recurrence || null,
       kind: r.kind === 'note' ? 'note' : 'action',
+      type: normalizeType(r.type),
       status: r.dropped ? 'todo' : r.done ? 'done' : 'todo',
       dropped: !!r.dropped,
       progress: r.done ? 100 : 0,

@@ -3,7 +3,7 @@
    Progressive disclosure: essentials first. Distinct labels for
    due / planned start / estimate / actual / reminders.
    ============================================================ */
-import { S, commit, byId, deleteTask } from './store.js';
+import { S, commit, byId, deleteTask, TASK_TYPES, normalizeType } from './store.js';
 import { tr, N, parseISO, fmtDate, isoTime, iso, dayKey, hasTimeOfDay } from './i18n.js';
 import { h, sv, icons, announce } from './ui.js';
 import { sheet, snackbar, tickChip, PRIORITY, DOPAMINE, PRESSURE } from './components.js';
@@ -83,10 +83,37 @@ function onToggleDone(task) {
     kd.append(h('button', { class: 'pick' + (task.kind === k ? ' on' : ''), onclick: () => { task.kind = k; commit(tt => !!tt.tasks); rebuild(); } }, tr(lk)));
   }
   return h('div', { class: 'detail-sec' },
-    h('div', { class: 'detail-label' }, tr('estimate')), est,
+    h('div', { class: 'detail-label' }, tr('type_label')),
+    typeRow(task, rebuild),
+    h('div', { class: 'detail-label', style: 'margin-top:12px' }, tr('estimate')), est,
     h('div', { class: 'detail-label', style: 'margin-top:12px' }, tr('priority')), pr,
     h('div', { class: 'detail-label', style: 'margin-top:12px' }, tr('kind')), kd,
   );
+}
+
+/* item 9 — the four types, with fill-only-unset defaults: switching type
+   NEVER destroys values the user already set, it only supplies what the field
+   is missing (responsibility: due today + med priority; organizer: daily
+   repeat; mover/nice: nothing). Capture-time tasks stay undated — that is
+   item 1's inbox-capture contract, untouched here. */
+function typeRow(task, rebuild) {
+  const emo = { mover: '🚀', responsibility: '🎯', organizer: '🔁', nice: '☁️' };
+  const row = h('div', { class: 'chips-row', style: 'margin-top:8px' });
+  for (const k of TASK_TYPES) {
+    row.append(h('button', { class: 'pick' + (normalizeType(task.type) === k ? ' on' : ''), title: tr('type_' + (k === 'nice' ? 'nice' : k)), onclick: () => {
+      task.type = k;
+      if (k === 'responsibility') {
+        if (!task.dueDate) task.dueDate = dayKey(new Date());
+        if (!task.priority || task.priority === 'none') task.priority = 'med';
+      } else if (k === 'organizer') {
+        if (!task.recurrence) task.recurrence = 'daily';
+      }
+      task.modifiedAt = Date.now();
+      commit(tt => !!tt.tasks);
+      rebuild();
+    } }, emo[k] + ' ' + tr('type_' + (k === 'nice' ? 'nice' : k))));
+  }
+  return row;
 }
 
 /* distinct commitments: due / planned start / estimate / actual / reminders */

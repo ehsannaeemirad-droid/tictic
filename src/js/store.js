@@ -36,6 +36,13 @@ export const S = {
   activeSession: null,
 };
 
+/* item 9 — task types: Movers (goals) / Responsibilities (must-dos) /
+   Organizers (routines) / Nice-to-do (someday). 'responsibility' is the
+   backward-compatible default: a task with no type behaves exactly as
+   every existing task did. */
+export const TASK_TYPES = ['mover', 'responsibility', 'organizer', 'nice'];
+export const normalizeType = (v) => TASK_TYPES.includes(v) ? v : 'responsibility';
+
 export function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
@@ -43,11 +50,12 @@ export function uid() {
 /* ---- task shape factory (§3) ---- */
 export function makeTask(patch = {}) {
   const now = Date.now();
-  return {
+  const t = {
     id: uid(), title: '', notes: '',
     dueDate: null, plannedStart: null, estimate: null, actual: null,
     reminder: [], recurrence: null, priority: 'none',
     dopamineType: null, pressureType: null, kind: 'action',
+    type: 'responsibility',
     tags: [], listId: 'inbox', sectionId: null,
     subtasks: [], checkItems: [], progress: 0,
     status: 'todo', pinned: false, key: false, noise: false,
@@ -55,6 +63,9 @@ export function makeTask(patch = {}) {
     createdAt: now, modifiedAt: now, activity: [], parentId: null,
     order: now, ...patch,
   };
+  /* an explicit `type: undefined` in a patch must not erase the default */
+  t.type = normalizeType(t.type);
+  return t;
 }
 
 /* ---- persistence ---- */
@@ -125,6 +136,9 @@ export function hydrate(data) {
   /* settings gain keys over time — merge over the defaults instead of
      replacing them wholesale, so an older mirror can't blank a new option */
   if (data.settings) S.settings = { ...S.settings, ...data.settings, energyBehavior: { ...S.settings.energyBehavior, ...(data.settings.energyBehavior || {}) } };
+  /* every task must carry a valid type (item 9) — older mirrors predate the
+     field; normalize instead of letting undefined leak into renderers */
+  for (const t of (S.tasks || [])) { if (!TASK_TYPES.includes(t.type)) t.type = 'responsibility'; }
   lastMirrorSavedAt = data.savedAt || 0;
 }
 

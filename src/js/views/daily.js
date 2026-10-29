@@ -3,7 +3,7 @@
    Frog banner · energy mode · overdue (neutral) · key tasks ·
    regular · done today · Noise Harbor card · Now list
    ============================================================ */
-import { S, commit, persist, byId, makeTask, deleteTask } from '../store.js';
+import { S, commit, persist, byId, makeTask, deleteTask, normalizeType } from '../store.js';
 import { tr, N, fmtDate, dayName, parseISO, dayKey } from '../i18n.js';
 import { visible, todayKey } from '../horizons.js';
 import { todayRenderPlan } from '../rows.js';
@@ -276,6 +276,10 @@ function rowTask(task, inShortlist = false) {
     ),
   );
 }
+/* item 9 — row badge per type (distinct emoji + color-coded class;
+   check-types.mjs pins the class map) */
+const TYPE_EMO = { mover: '🚀', responsibility: '🎯', organizer: '🔁', nice: '☁️' };
+
 function metaChips(task) {
   const bits = [];
   if (task.estimate) bits.push(N(task.estimate) + '′');
@@ -284,7 +288,12 @@ function metaChips(task) {
   if (task.delay) bits.push('⏳' + N(fmtDate(parseISO(dayKey(task.delay)))));
   if (task.reminders?.length) bits.push('🔔' + N(task.reminders.length));
   if (task.kind === 'decision') bits.push('？' + tr('decide'));
-  /* item 4 — inline metadata: due chip, first 2 tags (+N), list name */
+  /* item 9 — the type chip, first thing after the title. Tasks loaded from
+     old mirrors may carry no type — normalize instead of leaking undefined. */
+  /* item 9 — the type chip leads the meta line; tasks from old mirrors may
+     carry no type → normalizeType instead of leaking undefined */
+  const ty = normalizeType(task.type);
+  bits.unshift(TYPE_EMO[ty] + ' ' + tr('type_' + (ty === 'nice' ? 'nice' : ty)));
   const due = task.dueDate ? dayKey(task.dueDate) : null;
   if (due) bits.push('📅 ' + (due === todayKey()
     ? tr('today')
@@ -297,7 +306,7 @@ function metaChips(task) {
     if (ln) bits.push('🗂 ' + ln);
   }
   if (!bits.length) return h('span', {});
-  return h('span', { class: 't-meta num' }, bits.join(' · '));
+  return h('span', { class: `t-meta num t-type-${ty}` }, bits.join(' · '));
 }
 
 function onToggle(task) {

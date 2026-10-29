@@ -362,3 +362,9 @@
 /* ---------------- Noise harbor / misc lists ---------------- */
 .dump-list { display: grid; gap: var(--sp-2); }
 .dump-list .pick { min-height: var(--target-min); }
+
+/* item 9 — task-type color coding on the row's meta badge (t-type-*) */
+.t-type-mover { color: var(--accent); }
+.t-type-responsibility { color: var(--info); }
+.t-type-organizer { color: var(--success); }
+.t-type-nice { color: var(--text-muted); }
