@@ -111,6 +111,16 @@
   content: ""; position: absolute; inset-block: 6px; inset-inline-start: 0;
   width: 3px; border-radius: var(--r-pill); background: var(--priority-frog);
 }
+/* priority encodes to a left bar: frog 3px (above), high 3px, med 2px,
+   low/none none — the ADHD eye should catch the red/amber walls first */
+.trow.p-high::before {
+  content: ""; position: absolute; inset-block: 6px; inset-inline-start: 0;
+  width: 3px; border-radius: var(--r-pill); background: var(--priority-high);
+}
+.trow.p-med::before {
+  content: ""; position: absolute; inset-block: 6px; inset-inline-start: 0;
+  width: 2px; border-radius: var(--r-pill); background: var(--priority-med);
+}
 .trow.done .t-title { color: var(--text-muted); text-decoration: line-through; text-decoration-thickness: 1.5px; }
 .trow.done .t-meta { opacity: .7; }
 

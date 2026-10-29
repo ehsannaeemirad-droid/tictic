@@ -183,7 +183,7 @@ function frogInView() {
    below keeps owning the full set of actions. */
 function nowRow({ t, why }) {
   const P = PRIORITY[t.priority] || PRIORITY.none;
-  return h('div', { class: 'trow' + (t.priority === 'frog' ? ' kfrog' : ''), style: `--pc:${P.color}` },
+  return h('div', { class: 'trow' + (t.priority === 'frog' ? ' kfrog' : prioClass(t.priority)), style: `--pc:${P.color}` },
     h('div', { class: 't-main' },
       h('div', { style: 'min-width:0;flex:1' },
         h('button', { class: 't-title', onclick: () => openDetail(t.id), title: t.title }, t.title),
@@ -222,10 +222,12 @@ function rowKeyMove(e, task) {
     e.preventDefault();
   }
 }
+/* priority visual class: high 3px bar, med 2px, frog keeps its kfrog row rule */
+const prioClass = p => p === 'high' ? ' p-high' : p === 'med' ? ' p-med' : '';
 function rowTask(task, inShortlist = false) {
   const P = PRIORITY[task.priority] || PRIORITY.none;
   return h('div', {
-    class: 'trow' + (task.status === 'done' ? ' done' : '') + (task.priority === 'frog' ? ' kfrog' : ''), style: `--pc:${P.color}`,
+    class: 'trow' + (task.status === 'done' ? ' done' : '') + (task.priority === 'frog' ? ' kfrog' : prioClass(task.priority)), style: `--pc:${P.color}`,
     tabindex: '0', role: 'listitem',
     'aria-label': task.title + ' — ' + tr('kbd_move_hint'),
     onKeydown: e => rowKeyMove(e, task),
