@@ -69,8 +69,9 @@ for (const horizon of HORIZON_IDS) {
       const showsOverdue = horizon !== 'inbox';
       assert((label === 'overdue') === (pastDue && showsOverdue), `${tag}: overdue classification wrong (got ${label})`);
 
-      /* 3. the today horizon hides nothing */
-      if (horizon === 'today' && (offset === null || offset <= 0)) {
+      /* 3. the today horizon hides nothing dated today-or-earlier
+         (undated capture moved to the inbox horizon by design — item 1) */
+      if (horizon === 'today' && (offset !== null && offset <= 0)) {
         assert(label !== null, `${tag}: a task the today view must show is hidden`);
         assert(label === 'overdue' || label === 'bucket', `${tag}: no group assigned`);
       }
@@ -83,7 +84,7 @@ for (const horizon of HORIZON_IDS) {
       const dueKeyNow = offset === null ? null : dayShift(TODAY, offset);
       const inOwnList = inBucket(horizon, dueKeyNow, TODAY);
       const spec = {
-        today:     offset === null || offset === 0,
+        today:     offset === 0,   /* undated capture is the inbox horizon's job now */
         tomorrow:  offset === 1,
         this_week: offset !== null && offset >= 0 && offset <= 7,
         next7:     offset !== null && offset >= 1 && offset <= 7,
@@ -114,7 +115,9 @@ for (const horizon of HORIZON_IDS) {
 const yesterday = dayShift(TODAY, -1);
 assert(!inBucket('today', yesterday, TODAY), 'a past-due task is in the today bucket (duplicate rows would return)');
 assert(inBucket('today', TODAY, TODAY), 'a task due today must be in the today bucket');
-assert(inBucket('today', null, TODAY), 'an undated task must be in the today bucket (the app shows it there)');
+assert(!inBucket('today', null, TODAY), 'an undated task must NOT be in the today bucket (it belongs to the inbox horizon)');
+assert(inBucket('inbox', null, TODAY) && groupOf(task(null), 'inbox', TODAY) === 'bucket', 'undated capture must live in the inbox horizon, classifier and bucket agreeing');
+assert(groupOf(task(null), 'today', TODAY) === null, 'the today classifier must claim no undated task (neither bucket nor overdue)');
 assert(groupOf(task(yesterday), 'today', TODAY) === 'overdue', 'a past-due task must be owned by the overdue group');
 
 /* ---- 8. the seeded Today view: the real render set -----------------------

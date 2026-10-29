@@ -27,9 +27,13 @@ export function computeNow({ matcher = null, top = NOW_CAP } = {}) {
   const tk = todayKey();
   const next = nextCommitment(todayCommitmentRows(), new Date().toTimeString().slice(0, 5));
 
+  /* A task matched to the next fixed commitment counts as today work even
+     when undated — the timetable is itself the due anchor (check-now pins
+     this). Everything else undated lives in the inbox horizon now. */
   const cands = S.tasks.filter(t =>
     t.status === 'todo' && !t.noise && !t.dropped && !t.parentId &&
-    visible(S, t, matcher) && groupOf(t, 'today', tk) !== null);
+    visible(S, t, matcher) &&
+    (groupOf(t, 'today', tk) !== null || (!t.dueDate && next && t.title === next[2])));
 
   const scored = cands.map((t, i) => {
     const reasons = [];                 /* i18n KEYS, in the order they apply */

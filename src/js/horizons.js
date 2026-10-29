@@ -99,7 +99,10 @@ export function inBucket(horizon, due, today = todayKey()) {
   const tomorrow = dayShift(today, 1);
   const in7 = dayShift(today, 7);
   switch (horizon) {
-    case 'today':     return !due || due === today;          /* past-due lives in the overdue group */
+    /* Today = explicitly dated today. Undated capture lives in the Inbox
+       horizon; leaving here the old `!due ||` made a 127-task TickTick
+       import with no dates flood Today. Past-due lives in the overdue group. */
+    case 'today':     return due === today;
     case 'tomorrow':  return due === tomorrow;
     case 'this_week': return !!due && due >= today && due <= in7;
     case 'next7':     return !!due && due >= tomorrow && due <= in7;
